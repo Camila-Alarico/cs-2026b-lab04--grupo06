@@ -1,7 +1,7 @@
 # RutaSIT Arequipa — Laboratorio 04: Fundamentos de arquitectura de software
 Construcción de Software · EPIS-UNSA · 2026-B · Grupo 06
 ## Integrantes
-| Nombre | Rol en el laboratorio  |
+| Nombre       | Rol en el laboratorio                           |
 |Camila Alarico| Redactor de ADR, diagramador y verificador de IA|
 ## Caso
 <Descripción de 4–6 líneas y atributo de calidad crítico>
