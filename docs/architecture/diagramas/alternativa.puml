@@ -1,0 +1,30 @@
+@startuml
+skinparam dpi 220
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam backgroundColor white
+title Alternativa A (descartada): RutaSIT como monolito en capas síncrono
+actor "Pasajero" as P
+actor "Operador" as O
+node "Bus (GPS)" as B
+package "Aplicación Django (un solo despliegue)" {
+  component "Presentación\n(API REST)" as PRES
+  component "Lógica de negocio\n(ETA calculado al consultar)" as LOG
+  component "Acceso a datos" as DAL
+}
+database "PostgreSQL + PostGIS" as DB
+cloud "Proveedor de mapas" as MAP
+B --> PRES : POST posición
+P --> PRES : polling
+O --> PRES
+PRES --> LOG
+LOG --> DAL
+DAL --> DB
+P ..> MAP : tiles
+note bottom of DB
+  Descartada: puntaje 3,90 frente a 4,15 del monolito modular.
+  El ETA se calcula al consultar, con la BD en el camino de lectura:
+  el p95 de QA-01 depende de cuántos pasajeros consulten.
+  Capas acopladas: modificabilidad 2/5 (QA-03).
+end note
+@enduml

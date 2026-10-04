@@ -1,11 +1,15 @@
 # RutaSIT Arequipa — Laboratorio 04: Fundamentos de arquitectura de software
 Construcción de Software · EPIS-UNSA · 2026-B · Grupo 06
 ## Integrantes
-| Nombre       | Rol en el laboratorio                           |
-|Camila Alarico| Redactor de ADR, diagramador y verificador de IA|
+| Nombre | Rol en el laboratorio |
+|--------|------------------------|
+| Camila | Trabajo individual: drivers, matriz de decisión, ADR, diagramas, bitácora y verificación de la IA |
+
 ## Caso
-<Descripción de 4–6 líneas y atributo de calidad crítico>
+RutaSIT Arequipa permite seguir en tiempo real los buses del Sistema Integrado de Transporte. 300 buses envían su posición GPS cada 10 s; los pasajeros ven los buses en un mapa y consultan el tiempo estimado de llegada (ETA) a un paradero, y el operador recibe alertas de desvío o congestión. El atributo de calidad crítico es el rendimiento en tiempo real: el ETA debe actualizarse en ≤ 15 s (p95) desde la recepción del GPS. El MVP debe salir en 1 mes con un solo developer y un servidor de bajo costo.
+
 ## Arquitectura elegida
+Monolito modular con ETA incremental, un solo despliegue y PostgreSQL.
 ```mermaid
 flowchart TB
     BUS["Bus (GPS)"]
@@ -39,9 +43,22 @@ flowchart TB
     class MAP ext
     class BUS,PAS,OPE usr
 ```
+## Documentos
+- [Drivers y escenarios de calidad](docs/architecture/drivers.md)
+- [Matriz de decisión](docs/architecture/matriz-decision.md)
+- [Bitácora de uso de IA](docs/architecture/bitacora-ia.md)
+- Diagrama de la alternativa descartada (PlantUML): `docs/architecture/diagramas/alternativa.puml`
+- Vista de despliegue: `docs/architecture/diagramas/despliegue.puml`
+
+## Vista de despliegue
+Por falta de tiempo para instalar Graphviz, la vista de despliegue (E6) se elaboró con un diagrama de despliegue de **PlantUML** en lugar de Python Diagrams.
+
+![Vista de despliegue](docs/architecture/diagramas/img/despliegue.png)
+
 ## Decisiones arquitectónicas
 - [ADR-001: Estilo arquitectónico](docs/architecture/adr/001-estilo-arquitectonico.md)
-- [ADR-002: ...](docs/architecture/adr/002-....md)
-- [ADR-003: ...](docs/architecture/adr/003-....md)
-## Reflexión sobre el uso de la IA (5–8 líneas)
-<¿En qué ayudó? ¿Qué errores cometió? ¿Qué aprendimos a verificar?>
+- [ADR-002: Polling vs WebSocket](docs/architecture/adr/002-polling-vs-websocket.md)
+- [ADR-003: Estado actual en PostgreSQL](docs/architecture/adr/003-estado-actual-postgresql.md)
+
+## Reflexión sobre el uso de la IA
+Claude y ChatGPT ayudaron a generar tres alternativas de estilo, a criticarlas como "abogado del diablo" y a redactar el código de los diagramas. También cometieron errores. Claude afirmó que su alternativa era la única que atacaba el atributo crítico y planteó una mitigación incoherente (reconstruir el estado desde PostgreSQL sin haber persistido antes los datos); ambas lo reconocieron al criticarse a sí mismas. ChatGPT recomendó WebSocket sin considerar que la carga depende de los pasajeros conectados y no de los 300 buses. Aprendimos a verificar con números (30 mensajes por segundo), a definir cómo se mide el p95 y a separar la latencia del sistema de la frescura del dato. La decisión final la tomamos nosotros y difiere en parte de ambas recomendaciones: sin Redis y con polling en el MVP.
