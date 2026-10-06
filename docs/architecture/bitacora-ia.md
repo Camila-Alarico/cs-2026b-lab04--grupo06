@@ -1,13 +1,3 @@
-# Bitácora de uso de IA — <Nombre del caso>
-| # | Fecha | Herramienta | Prompt (resumen) | Qué propuso la IA | Qué verificamos o corregimos | Decisión
-|
-|01|01/10/2026|Claude|Actúa como arquitecto de software senior. Contexto: plataforma "RutaSIT Arequipa" para seguimiento en tiempo real de los buses del Sistema Integrado de Transporte. 
-Restricciones: 1 solo developer con experiencia en Python, Java, Django y SQL; MVP en producción en 1 mes; presupuesto bajo. Tarea: propón 3 alternativas de estilo arquitectónico.||||
-| 1 | 29/09 | Claude | Prompt 1 adaptado: 3 alternativas para ... | Microservicios + Kubernetes |
-Excede R-01 (1 mes) y R-03 (presupuesto) | Rechazada |
-| 2 | ... | ... | ... | ... | ... | Aceptada
-/ Corregida / Rechazada |
-
 # Bitácora de uso de IA — RutaSIT Arequipa
 
 | # | Fecha | Herramienta | Prompt (resumen) | Qué propuso la IA | Qué verificamos o corregimos | Decisión |
@@ -17,8 +7,6 @@ Excede R-01 (1 mes) y R-03 (presupuesto) | Rechazada |
 | 3 | 02/10 | ChatGPT | Prompt 1 adaptado: el mismo contexto y restricciones | 1: monolito modular + polling. 2: monolito modular + WebSocket. 3: event-driven/microservicios. Recomendó la 2. | WebSocket depende de los pasajeros conectados, no de los buses; añade reconexiones y estado; R-02 limita a 1 developer. La alternativa 3 coincide con el descarte de Claude. | Rechazada (WebSocket en el MVP) |
 | 4 | 02/10 | ChatGPT | Prompt 2: crítica adversarial a la alternativa 2 | 5 riesgos: WebSocket como cuello de botella, servidor único, cortes de red, ETA más complejo de lo previsto, complejidad operativa. Señaló que se puede cumplir el p95 y dar un ETA obsoleto. | Se acepta separar latencia de frescura: guardar timestamp GPS y de recepción, y marcar "dato desactualizado". La propia IA recomendó empezar con polling. | Aceptada |
 | 5 | 03/10 | Claude | Generar el Mermaid de la alternativa B a partir de matriz-decision.md | Diagrama con 3 actores, 4 módulos, capa de presentación e infraestructura, PostgreSQL y proveedor de mapas | Se validó en mermaid.live y GitHub; se comprobó que cada módulo cubre RF-01 a RF-06 y que ETA y Alertas dependen de Ubicaciones y Rutas solo por interfaz pública | Aceptada |
-
-> Faltan entradas para llegar a 5: la siguiente será la generación del diagrama Mermaid (E3), revisada línea por línea.
 
 ## Anexo: prompts
 
