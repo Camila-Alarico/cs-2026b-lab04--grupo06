@@ -1,0 +1,3 @@
+| # | Fecha | Herramienta | Prompt (resumen) | Qué propuso la IA | Qué verificamos o corregimos | Decisión |
+|---|-------|-------------|------------------|-------------------|------------------------------|----------|
+| 1 | 08/10 | Claude | Prompt IA 1 adaptado: diagrama de clases para HU-01 (ETA) | 10 clases, 3 interfaces y la enumeración EstadoViaje, con paquetes por módulo | Se quitó Viaje.obtenerUltimaPosicion() (duplicaba al repositorio); se agregó RepositorioViajes (C1); se reemplazaron los booleanos redundantes por EstadoEta; se movió el umbral de 30 s a ServicioEta; se corrigió una multiplicidad en una dependencia y la agregación Viaje–PosicionGPS pasó a composición; se agregaron operaciones de Viaje para las transiciones (C2) | Corregida |
