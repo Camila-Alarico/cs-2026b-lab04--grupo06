@@ -55,6 +55,35 @@ Por falta de tiempo para instalar Graphviz, la vista de despliegue (E6) se elabo
 
 ![Vista de despliegue](docs/architecture/diagramas/img/despliegue.png)
 
+## Diseño UML (Lab 05)
+
+Continuación del Laboratorio 04 sobre RutaSIT Arequipa. Historia crítica: **HU-01, consultar el ETA del bus a un paradero** ([historia.md](docs/design/historia.md)). Los diagramas se escribieron como código (PlantUML y Mermaid) y la verificación de consistencia está en [consistencia.md](docs/design/consistencia.md).
+
+### Máquina de estados del Viaje
+
+```mermaid
+stateDiagram-v2
+    [*] --> Programado : crear viaje
+    Programado --> EnRuta : iniciar() [hora de salida alcanzada]
+    EnRuta --> Desviado : marcarDesviado() [distancia a la ruta mayor que umbralDesvioMetros durante N lecturas]
+    Desviado --> EnRuta : reanudar() [vuelve a la ruta]
+    EnRuta --> Detenido : marcarDetenido() [velocidad nula durante T segundos]
+    Detenido --> EnRuta : reanudar() [velocidad mayor que cero]
+    EnRuta --> Finalizado : finalizar() [llegó al último paradero]
+    Desviado --> Finalizado : finalizar()
+    Detenido --> Finalizado : finalizar()
+    Finalizado --> [*]
+```
+
+### Diagramas y documentos
+- Diagrama de clases: [clases.puml](docs/design/clases.puml) · ![Clases](docs/design/img/clases.png)
+- Diagrama de secuencia: [secuencia-consultar-eta.puml](docs/design/secuencia-consultar-eta.puml) · ![Secuencia](docs/design/img/secuencia-consultar-eta.png)
+- Máquina de estados: [estados-viaje.mmd](docs/design/estados-viaje.mmd)
+- Diagrama de actividades: [actividades-detectar-desvio.puml](docs/design/actividades-detectar-desvio.puml) · ![Actividades](docs/design/img/actividades-detectar-desvio.png)
+- Diagrama de paquetes: [paquetes.puml](docs/design/paquetes.puml) · ![Paquetes](docs/design/img/paquetes.png)
+- Round-trip (código generado con IA e ingeniería inversa): [round-trip.md](docs/design/round-trip.md) y [src/rutasit/dominio.py](src/rutasit/dominio.py)
+- Bitácora de IA del laboratorio: [bitacora-ia.md](docs/design/bitacora-ia.md)
+
 ## Decisiones arquitectónicas
 - [ADR-001: Estilo arquitectónico](docs/architecture/adr/001-estilo-arquitectonico.md)
 - [ADR-002: Polling vs WebSocket](docs/architecture/adr/002-polling-vs-websocket.md)
