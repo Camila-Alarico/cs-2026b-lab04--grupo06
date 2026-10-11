@@ -1,0 +1,113 @@
+@startuml clases-eta-rutasit
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam nodesep 25
+skinparam ranksep 40
+hide empty members
+title RutaSIT Arequipa — Módulos Ubicaciones, ETA y Rutas y paraderos (diseño)
+
+enum EstadoViaje {
+  Programado
+  EnRuta
+  Desviado
+  Detenido
+  Finalizado
+}
+enum EstadoEta {
+  Actualizado
+  Desactualizado
+  NoDisponible
+}
+
+package "Rutas y paraderos" {
+  class Ruta {
+    - codigo: String
+    - nombre: String
+    + obtenerParaderosOrdenados(): List<Paradero>
+  }
+  class Paradero {
+    - codigo: String
+    - nombre: String
+    - latitud: double
+    - longitud: double
+  }
+  class ParaderoDeRuta {
+    - orden: int
+  }
+}
+
+package "Ubicaciones" {
+  class Bus {
+    - placa: String
+  }
+  class Viaje {
+    - id: String
+    - estado: EstadoViaje
+    + estaEnRuta(): boolean
+    + iniciar(): void
+    + marcarDesviado(): void
+    + marcarDetenido(): void
+    + reanudar(): void
+    + finalizar(): void
+  }
+  class PosicionGPS {
+    - latitud: double
+    - longitud: double
+    - velocidad: double
+    - marcaTiempo: Instant
+    + esReciente(ahora: Instant, umbralSegundos: int): boolean
+  }
+  interface RepositorioViajes <<puerto>> {
+    + buscarPorId(idViaje: String): Optional<Viaje>
+  }
+  interface RepositorioPosiciones <<puerto>> {
+    + guardarPosicion(idViaje: String, posicion: PosicionGPS): void
+    + obtenerUltimaPosicion(idViaje: String): Optional<PosicionGPS>
+  }
+  class RepositorioPosicionesPostgres <<adaptador>>
+}
+
+package "ETA" {
+  class Eta {
+    - minutosEstimados: int
+    - horaCalculo: Instant
+  }
+  class ResultadoEta {
+    - estado: EstadoEta
+    - mensaje: String
+  }
+  class ServicioEta <<servicio>> {
+    - umbralAntiguedadSegundos: int
+    + consultarEta(idViaje: String, codigoParadero: String): ResultadoEta
+    + recalcularEta(idViaje: String, posicion: PosicionGPS): void
+  }
+  interface RepositorioEta <<puerto>> {
+    + guardarEta(idViaje: String, codigoParadero: String, eta: Eta): void
+    + obtenerUltimoEta(idViaje: String, codigoParadero: String): Optional<Eta>
+  }
+  interface RegistroMetricas <<puerto>> {
+    + registrar(nombre: String, valor: long): void
+  }
+}
+
+Ruta "1" *-- "2..*" ParaderoDeRuta : define >
+Paradero "1" -- "0..*" ParaderoDeRuta : participa en >
+Ruta "1" -- "0..*" Viaje : se recorre en >
+Bus "1" -- "0..*" Viaje : realiza >
+Viaje "1" *-- "0..*" PosicionGPS : registra >
+Viaje "0..*" --> "1" EstadoViaje
+Viaje "1" -- "0..*" Eta : tiene >
+Paradero "1" -- "0..*" Eta : destino de >
+ResultadoEta "0..*" --> "1" EstadoEta
+ResultadoEta "1" o-- "0..1" Eta : contiene >
+ServicioEta ..> RegistroMetricas
+RepositorioPosiciones <|.. RepositorioPosicionesPostgres
+RepositorioViajes ..> Viaje
+RepositorioPosiciones ..> PosicionGPS
+RepositorioEta ..> Eta
+ServicioEta ..> RepositorioViajes
+ServicioEta ..> RepositorioPosiciones
+ServicioEta ..> RepositorioEta
+ServicioEta ..> ResultadoEta : produce
+@enduml

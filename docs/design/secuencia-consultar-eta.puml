@@ -1,0 +1,47 @@
+@startuml secuencia-consultar-eta
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+autonumber
+actor Pasajero
+participant "PWA" as UI
+participant "EtaController" as C
+participant "ServicioEta" as S
+participant "RepositorioViajes" as RV
+participant "Viaje" as V
+participant "RepositorioPosiciones" as RP
+participant "PosicionGPS" as P
+participant "RepositorioEta" as RE
+participant "RegistroMetricas" as M
+
+Pasajero -> UI : Consultar ETA de un paradero
+UI -> C : GET /viajes/{id}/paraderos/{codigo}/eta
+C -> S : consultarEta(idViaje, codigoParadero)
+S -> RV : buscarPorId(idViaje)
+RV --> S : viaje
+S -> V : estaEnRuta()
+V --> S : enRuta
+alt viaje EnRuta
+  S -> RP : obtenerUltimaPosicion(idViaje)
+  RP --> S : posicion
+  S -> P : esReciente(ahora, umbralSegundos)
+  P --> S : reciente
+  S -> RE : obtenerUltimoEta(idViaje, codigoParadero)
+  RE --> S : eta
+  opt medición de frescura habilitada
+    S ->> M : registrar("antiguedad_posicion_s", antiguedad)
+    note right of M : asíncrono\n(no bloquea la respuesta)
+  end
+  alt posición reciente (30 s o menos)
+    S --> C : ResultadoEta Actualizado
+    C --> UI : 200 OK, ETA vigente
+  else posición antigua (más de 30 s)
+    S --> C : ResultadoEta Desactualizado
+    C --> UI : 200 OK, ETA marcado como desactualizado
+  end
+else viaje no EnRuta
+  S --> C : ResultadoEta NoDisponible
+  C --> UI : 200 OK, sin ETA disponible
+end
+UI --> Pasajero : Muestra el ETA y su estado
+@enduml
