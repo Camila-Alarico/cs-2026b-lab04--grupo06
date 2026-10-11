@@ -1,5 +1,10 @@
 @startuml classes_rutasit
 set namespaceSeparator none
+class "Alerta" as rutasit.dominio.Alerta {
+  hora_generacion : datetime
+  id_viaje : str
+  tipo : str
+}
 class "Bus" as rutasit.dominio.Bus {
   placa : str
 }
@@ -28,10 +33,14 @@ class "PosicionGPS" as rutasit.dominio.PosicionGPS {
   longitud : float
   marca_tiempo : datetime
   velocidad : float
-  es_reciente(ahora: datetime, umbral_segundos: int) -> bool
+  antiguedad_segundos(ahora: datetime) -> int
+  es_reciente(ahora: datetime, umbral_antiguedad_segundos: int) -> bool
 }
 class "RegistroMetricas" as rutasit.dominio.RegistroMetricas {
   {abstract}registrar(nombre: str, valor: int) -> None
+}
+class "RepositorioAlertas" as rutasit.dominio.RepositorioAlertas {
+  {abstract}guardar(alerta: Alerta) -> None
 }
 class "RepositorioEta" as rutasit.dominio.RepositorioEta {
   {abstract}guardar_eta(id_viaje: str, codigo_paradero: str, eta: Eta) -> None
@@ -58,6 +67,14 @@ class "Ruta" as rutasit.dominio.Ruta {
   nombre : str
   paraderos : list[ParaderoDeRuta]
   obtener_paraderos_ordenados() -> list[Paradero]
+}
+class "ServicioAlertas" as rutasit.dominio.ServicioAlertas {
+  lecturas_para_desvio : int
+  repositorio_alertas
+  segundos_para_detencion : int
+  umbral_desvio_metros : float
+  {abstract}evaluar_posicion(viaje: Viaje, posicion: PosicionGPS) -> None
+  registrar_alerta(id_viaje: str, tipo: str) -> Alerta
 }
 class "ServicioEta" as rutasit.dominio.ServicioEta {
   registro_metricas
@@ -88,6 +105,7 @@ rutasit.dominio.Viaje --> rutasit.dominio.EstadoViaje : estado
 rutasit.dominio.ParaderoDeRuta --> rutasit.dominio.Paradero : paradero
 rutasit.dominio.Viaje --> rutasit.dominio.Ruta : ruta
 rutasit.dominio.RegistroMetricas --o rutasit.dominio.ServicioEta : registro_metricas
+rutasit.dominio.RepositorioAlertas --o rutasit.dominio.ServicioAlertas : repositorio_alertas
 rutasit.dominio.RepositorioEta --o rutasit.dominio.ServicioEta : repositorio_eta
 rutasit.dominio.RepositorioPosiciones --o rutasit.dominio.ServicioEta : repositorio_posiciones
 rutasit.dominio.RepositorioViajes --o rutasit.dominio.ServicioEta : repositorio_viajes

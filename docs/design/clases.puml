@@ -5,20 +5,7 @@ skinparam defaultFontName Arial
 skinparam nodesep 25
 skinparam ranksep 40
 hide empty members
-title RutaSIT Arequipa — Módulos Ubicaciones, ETA y Rutas y paraderos (diseño)
-
-enum EstadoViaje {
-  Programado
-  EnRuta
-  Desviado
-  Detenido
-  Finalizado
-}
-enum EstadoEta {
-  Actualizado
-  Desactualizado
-  NoDisponible
-}
+title RutaSIT Arequipa — Módulos Ubicaciones, ETA, Rutas y paraderos y Alertas (diseño)
 
 package "Rutas y paraderos" {
   class Ruta {
@@ -38,6 +25,13 @@ package "Rutas y paraderos" {
 }
 
 package "Ubicaciones" {
+  enum EstadoViaje {
+    Programado
+    EnRuta
+    Desviado
+    Detenido
+    Finalizado
+  }
   class Bus {
     - placa: String
   }
@@ -56,7 +50,8 @@ package "Ubicaciones" {
     - longitud: double
     - velocidad: double
     - marcaTiempo: Instant
-    + esReciente(ahora: Instant, umbralSegundos: int): boolean
+    + antiguedadSegundos(ahora: Instant): long
+    + esReciente(ahora: Instant, umbralAntiguedadSegundos: int): boolean
   }
   interface RepositorioViajes <<puerto>> {
     + buscarPorId(idViaje: String): Optional<Viaje>
@@ -69,6 +64,11 @@ package "Ubicaciones" {
 }
 
 package "ETA" {
+  enum EstadoEta {
+    Actualizado
+    Desactualizado
+    NoDisponible
+  }
   class Eta {
     - minutosEstimados: int
     - horaCalculo: Instant
@@ -91,23 +91,56 @@ package "ETA" {
   }
 }
 
+package "Alertas" {
+  class Alerta {
+    - tipo: String
+    - horaGeneracion: Instant
+  }
+  class ServicioAlertas <<servicio>> {
+    - umbralDesvioMetros: double
+    - lecturasParaDesvio: int
+    - segundosParaDetencion: int
+    + evaluarPosicion(viaje: Viaje, posicion: PosicionGPS): void
+    + registrarAlerta(idViaje: String, tipo: String): Alerta
+  }
+  interface RepositorioAlertas <<puerto>> {
+    + guardar(alerta: Alerta): void
+  }
+}
+
 Ruta "1" *-- "2..*" ParaderoDeRuta : define >
 Paradero "1" -- "0..*" ParaderoDeRuta : participa en >
 Viaje "0..*" --> "1" Ruta : se recorre en >
 Bus "1" -- "0..*" Viaje : realiza >
 Viaje "1" *-- "0..*" PosicionGPS : registra >
 Viaje "0..*" --> "1" EstadoViaje
-Viaje "1" -- "0..*" Eta : tiene >
-Paradero "1" -- "0..*" Eta : destino de >
+Eta "0..*" --> "1" Viaje : de >
+Eta "0..*" --> "1" Paradero : destino >
 ResultadoEta "0..*" --> "1" EstadoEta
 ResultadoEta "1" o-- "0..1" Eta : contiene >
-ServicioEta ..> RegistroMetricas
+Alerta "0..*" --> "1" Viaje : sobre >
+
 RepositorioPosiciones <|.. RepositorioPosicionesPostgres
 RepositorioViajes ..> Viaje
 RepositorioPosiciones ..> PosicionGPS
 RepositorioEta ..> Eta
+RepositorioAlertas ..> Alerta
 ServicioEta ..> RepositorioViajes
 ServicioEta ..> RepositorioPosiciones
 ServicioEta ..> RepositorioEta
+ServicioEta ..> RegistroMetricas
 ServicioEta ..> ResultadoEta : produce
+ServicioAlertas ..> RepositorioAlertas
+ServicioAlertas ..> Viaje : cambia el estado
+ServicioAlertas ..> PosicionGPS
+ServicioAlertas ..> Ruta : distancia a la ruta
+
+note right of Eta
+  Invariante: un solo Eta vigente
+  por par (Viaje, Paradero).
+end note
+note right of ResultadoEta
+  Invariante: eta es obligatorio si el
+  estado es Actualizado o Desactualizado.
+end note
 @enduml

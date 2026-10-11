@@ -1,7 +1,7 @@
 stateDiagram-v2
-    [*] --> Programado
-    Programado --> EnRuta : iniciar() [hay bus asignado]
-    EnRuta --> Desviado : marcarDesviado() [distancia a la ruta sobre el umbral durante N lecturas]
+    [*] --> Programado : crear viaje
+    Programado --> EnRuta : iniciar() [hora de salida alcanzada]
+    EnRuta --> Desviado : marcarDesviado() [distancia a la ruta mayor que umbralDesvioMetros durante N lecturas]
     Desviado --> EnRuta : reanudar() [vuelve a la ruta]
     EnRuta --> Detenido : marcarDetenido() [velocidad nula durante T segundos]
     Detenido --> EnRuta : reanudar() [velocidad mayor que cero]

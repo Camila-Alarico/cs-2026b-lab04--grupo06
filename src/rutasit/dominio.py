@@ -57,9 +57,11 @@ class PosicionGPS:
     velocidad: float
     marca_tiempo: datetime
 
-    def es_reciente(self, ahora: datetime, umbral_segundos: int) -> bool:
-        return (ahora - self.marca_tiempo).total_seconds() <= umbral_segundos
+    def antiguedad_segundos(self, ahora: datetime) -> int:
+        return int((ahora - self.marca_tiempo).total_seconds())
 
+    def es_reciente(self, ahora: datetime, umbral_antiguedad_segundos: int) -> bool:
+        return self.antiguedad_segundos(ahora) <= umbral_antiguedad_segundos
 
 @dataclass
 class Viaje:
@@ -159,7 +161,7 @@ class ServicioEta:
         if posicion is None or eta is None:
             return ResultadoEta(EstadoEta.NO_DISPONIBLE, "Aún no hay datos para este paradero")
         ahora = datetime.now()
-        antiguedad = int((ahora - posicion.marca_tiempo).total_seconds())
+        antiguedad = posicion.antiguedad_segundos(ahora)
         self.registro_metricas.registrar("antiguedad_posicion_s", antiguedad)
         if posicion.es_reciente(ahora, self.umbral_antiguedad_segundos):
             return ResultadoEta(EstadoEta.ACTUALIZADO, "ETA vigente", eta)
@@ -167,3 +169,36 @@ class ServicioEta:
 
     def recalcular_eta(self, id_viaje: str, posicion: PosicionGPS) -> None:
         raise NotImplementedError("Algoritmo de ETA pendiente (proyección sobre la ruta)")
+
+@dataclass
+class Alerta:
+    id_viaje: str
+    tipo: str
+    hora_generacion: datetime
+
+
+class RepositorioAlertas(ABC):
+    @abstractmethod
+    def guardar(self, alerta: Alerta) -> None: ...
+
+
+class ServicioAlertas:
+    def __init__(
+        self,
+        repositorio_alertas: RepositorioAlertas,
+        umbral_desvio_metros: float,
+        lecturas_para_desvio: int,
+        segundos_para_detencion: int,
+    ) -> None:
+        self.repositorio_alertas = repositorio_alertas
+        self.umbral_desvio_metros = umbral_desvio_metros
+        self.lecturas_para_desvio = lecturas_para_desvio
+        self.segundos_para_detencion = segundos_para_detencion
+
+    def evaluar_posicion(self, viaje: Viaje, posicion: PosicionGPS) -> None:
+        raise NotImplementedError("Cálculo de distancia a la ruta pendiente")
+
+    def registrar_alerta(self, id_viaje: str, tipo: str) -> Alerta:
+        alerta = Alerta(id_viaje, tipo, datetime.now())
+        self.repositorio_alertas.guardar(alerta)
+        return alerta

@@ -15,7 +15,7 @@ participant "RepositorioEta" as RE
 participant "RegistroMetricas" as M
 
 Pasajero -> UI : Consultar ETA de un paradero
-UI -> C : GET /viajes/{id}/paraderos/{codigo}/eta
+UI -> C : GET /viajes/{idViaje}/paraderos/{codigoParadero}/eta
 C -> S : consultarEta(idViaje, codigoParadero)
 S -> RV : buscarPorId(idViaje)
 RV --> S : viaje
@@ -24,20 +24,27 @@ V --> S : enRuta
 alt viaje EnRuta
   S -> RP : obtenerUltimaPosicion(idViaje)
   RP --> S : posicion
-  S -> P : esReciente(ahora, umbralSegundos)
-  P --> S : reciente
   S -> RE : obtenerUltimoEta(idViaje, codigoParadero)
   RE --> S : eta
-  opt medición de frescura habilitada
-    S ->> M : registrar("antiguedad_posicion_s", antiguedad)
-    note right of M : asíncrono\n(no bloquea la respuesta)
-  end
-  alt posición reciente (30 s o menos)
-    S --> C : ResultadoEta Actualizado
-    C --> UI : 200 OK, ETA vigente
-  else posición antigua (más de 30 s)
-    S --> C : ResultadoEta Desactualizado
-    C --> UI : 200 OK, ETA marcado como desactualizado
+  alt hay posición y ETA registrado
+    S -> P : antiguedadSegundos(ahora)
+    P --> S : antiguedad
+    opt medición de frescura habilitada
+      S ->> M : registrar("antiguedad_posicion_s", antiguedad)
+      note right of M : asíncrono\n(no bloquea la respuesta)
+    end
+    S -> P : esReciente(ahora, umbralAntiguedadSegundos)
+    P --> S : reciente
+    alt antigüedad ≤ umbralAntiguedadSegundos
+      S --> C : ResultadoEta Actualizado
+      C --> UI : 200 OK, ETA actualizado
+    else antigüedad > umbralAntiguedadSegundos
+      S --> C : ResultadoEta Desactualizado
+      C --> UI : 200 OK, ETA marcado como desactualizado
+    end
+  else sin posición o sin ETA registrado
+    S --> C : ResultadoEta NoDisponible
+    C --> UI : 200 OK, sin ETA disponible
   end
 else viaje no EnRuta
   S --> C : ResultadoEta NoDisponible

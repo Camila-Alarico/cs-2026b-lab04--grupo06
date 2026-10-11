@@ -9,7 +9,7 @@ package "rutasit" {
   package "ETA" as ETA
   package "Alertas" as ALE
 }
-ETA ..> UBI : usa Viaje, PosicionGPS,\nRepositorioViajes, RepositorioPosiciones
+ETA ..> UBI : usa Viaje, PosicionGPS,\nRepositorioViajes,\nRepositorioPosiciones
 ETA ..> RUT : usa Paradero
 ALE ..> UBI : usa Viaje, PosicionGPS
 ALE ..> RUT : usa Ruta
@@ -17,6 +17,7 @@ UBI ..> RUT : Viaje referencia Ruta
 note bottom of RUT
   Regla (ADR-001): sin dependencias cíclicas.
   Rutas y paraderos no depende de ningún módulo.
-  Los módulos solo se usan por interfaces públicas.
+  Los módulos no se invocan entre sí: la capa de presentación (API)
+  orquesta la ingesta (guarda la posición, recalcula el ETA y evalúa alertas).
 end note
 @enduml
