@@ -1,0 +1,7 @@
+@startuml packages_rutasit
+set namespaceSeparator none
+package "rutasit" as rutasit {
+}
+package "rutasit.dominio" as rutasit.dominio {
+}
+@enduml

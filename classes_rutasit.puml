@@ -1,0 +1,94 @@
+@startuml classes_rutasit
+set namespaceSeparator none
+class "Bus" as rutasit.dominio.Bus {
+  placa : str
+}
+class "EstadoEta" as rutasit.dominio.EstadoEta {
+  name
+}
+class "EstadoViaje" as rutasit.dominio.EstadoViaje {
+  name
+}
+class "Eta" as rutasit.dominio.Eta {
+  hora_calculo : datetime
+  minutos_estimados : int
+}
+class "Paradero" as rutasit.dominio.Paradero {
+  codigo : str
+  latitud : float
+  longitud : float
+  nombre : str
+}
+class "ParaderoDeRuta" as rutasit.dominio.ParaderoDeRuta {
+  orden : int
+  paradero
+}
+class "PosicionGPS" as rutasit.dominio.PosicionGPS {
+  latitud : float
+  longitud : float
+  marca_tiempo : datetime
+  velocidad : float
+  es_reciente(ahora: datetime, umbral_segundos: int) -> bool
+}
+class "RegistroMetricas" as rutasit.dominio.RegistroMetricas {
+  {abstract}registrar(nombre: str, valor: int) -> None
+}
+class "RepositorioEta" as rutasit.dominio.RepositorioEta {
+  {abstract}guardar_eta(id_viaje: str, codigo_paradero: str, eta: Eta) -> None
+  {abstract}obtener_ultimo_eta(id_viaje: str, codigo_paradero: str) -> Eta | None
+}
+class "RepositorioPosiciones" as rutasit.dominio.RepositorioPosiciones {
+  {abstract}guardar_posicion(id_viaje: str, posicion: PosicionGPS) -> None
+  {abstract}obtener_ultima_posicion(id_viaje: str) -> PosicionGPS | None
+}
+class "RepositorioPosicionesPostgres" as rutasit.dominio.RepositorioPosicionesPostgres {
+  {abstract}guardar_posicion(id_viaje: str, posicion: PosicionGPS) -> None
+  {abstract}obtener_ultima_posicion(id_viaje: str) -> PosicionGPS | None
+}
+class "RepositorioViajes" as rutasit.dominio.RepositorioViajes {
+  {abstract}buscar_por_id(id_viaje: str) -> Viaje | None
+}
+class "ResultadoEta" as rutasit.dominio.ResultadoEta {
+  estado
+  eta : Eta | None
+  mensaje : str
+}
+class "Ruta" as rutasit.dominio.Ruta {
+  codigo : str
+  nombre : str
+  paraderos : list[ParaderoDeRuta]
+  obtener_paraderos_ordenados() -> list[Paradero]
+}
+class "ServicioEta" as rutasit.dominio.ServicioEta {
+  registro_metricas
+  repositorio_eta
+  repositorio_posiciones
+  repositorio_viajes
+  umbral_antiguedad_segundos : int
+  consultar_eta(id_viaje: str, codigo_paradero: str) -> ResultadoEta
+  {abstract}recalcular_eta(id_viaje: str, posicion: PosicionGPS) -> None
+}
+class "Viaje" as rutasit.dominio.Viaje {
+  bus
+  estado
+  id : str
+  posiciones : list[PosicionGPS]
+  ruta
+  esta_en_ruta() -> bool
+  finalizar() -> None
+  iniciar() -> None
+  marcar_desviado() -> None
+  marcar_detenido() -> None
+  reanudar() -> None
+}
+rutasit.dominio.RepositorioPosicionesPostgres --|> rutasit.dominio.RepositorioPosiciones
+rutasit.dominio.Viaje --> rutasit.dominio.Bus : bus
+rutasit.dominio.ResultadoEta --> rutasit.dominio.EstadoEta : estado
+rutasit.dominio.Viaje --> rutasit.dominio.EstadoViaje : estado
+rutasit.dominio.ParaderoDeRuta --> rutasit.dominio.Paradero : paradero
+rutasit.dominio.Viaje --> rutasit.dominio.Ruta : ruta
+rutasit.dominio.RegistroMetricas --o rutasit.dominio.ServicioEta : registro_metricas
+rutasit.dominio.RepositorioEta --o rutasit.dominio.ServicioEta : repositorio_eta
+rutasit.dominio.RepositorioPosiciones --o rutasit.dominio.ServicioEta : repositorio_posiciones
+rutasit.dominio.RepositorioViajes --o rutasit.dominio.ServicioEta : repositorio_viajes
+@enduml
