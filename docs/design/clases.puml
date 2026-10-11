@@ -93,7 +93,7 @@ package "ETA" {
 
 Ruta "1" *-- "2..*" ParaderoDeRuta : define >
 Paradero "1" -- "0..*" ParaderoDeRuta : participa en >
-Ruta "1" -- "0..*" Viaje : se recorre en >
+Viaje "0..*" --> "1" Ruta : se recorre en >
 Bus "1" -- "0..*" Viaje : realiza >
 Viaje "1" *-- "0..*" PosicionGPS : registra >
 Viaje "0..*" --> "1" EstadoViaje

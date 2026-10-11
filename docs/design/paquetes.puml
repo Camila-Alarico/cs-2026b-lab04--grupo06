@@ -1,0 +1,22 @@
+@startuml paquetes
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+title RutaSIT Arequipa — Paquetes del monolito modular (vista de desarrollo)
+package "rutasit" {
+  package "Ubicaciones" as UBI
+  package "Rutas y paraderos" as RUT
+  package "ETA" as ETA
+  package "Alertas" as ALE
+}
+ETA ..> UBI : usa Viaje, PosicionGPS,\nRepositorioViajes, RepositorioPosiciones
+ETA ..> RUT : usa Paradero
+ALE ..> UBI : usa Viaje, PosicionGPS
+ALE ..> RUT : usa Ruta
+UBI ..> RUT : Viaje referencia Ruta
+note bottom of RUT
+  Regla (ADR-001): sin dependencias cíclicas.
+  Rutas y paraderos no depende de ningún módulo.
+  Los módulos solo se usan por interfaces públicas.
+end note
+@enduml
