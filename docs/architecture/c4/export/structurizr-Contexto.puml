@@ -1,0 +1,30 @@
+@startuml
+title <size:24>System Context View: RutaSIT Arequipa</size>\n<size:24>Nivel 1: RutaSIT y su entorno.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+Person(Pasajero, "Pasajero", $descr="Consulta dónde está su bus y cuándo llegará a su paradero.", $tags="", $link="")
+System(DispositivosGPSdelosbuses, "Dispositivos GPS de los buses", $descr="Rastreadores de los 300 buses que reportan su posición.", $tags="", $link="")
+System(Proveedordemapas, "Proveedor de mapas", $descr="Provee los mosaicos del mapa de Arequipa.", $tags="", $link="")
+Person(Operador, "Operador", $descr="Gestiona rutas y paraderos y atiende las alertas de desvío.", $tags="", $link="")
+System(RutaSITArequipa, "RutaSIT Arequipa", $descr="Muestra en un mapa la ubicación de los buses y estima su tiempo de llegada a cada paradero.", $tags="", $link="")
+
+Rel(Pasajero, RutaSITArequipa, "Consulta la ubicación de los buses y el ETA a su paradero", $techn="", $tags="", $link="")
+Rel(Operador, RutaSITArequipa, "Gestiona rutas y paraderos y atiende alertas de desvío", $techn="", $tags="", $link="")
+Rel(DispositivosGPSdelosbuses, RutaSITArequipa, "Envía la posición del bus cada 10 s", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa, Proveedordemapas, "Obtiene los mosaicos del mapa", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

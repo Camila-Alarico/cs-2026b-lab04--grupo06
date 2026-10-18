@@ -1,0 +1,23 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["System Context View: RutaSIT Arequipa"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Pasajero</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Consulta dónde está su bus y<br />cuándo llegará a su paradero.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    11["<div style='font-weight: bold'>Dispositivos GPS de los buses</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Rastreadores de los 300 buses<br />que reportan su posición.</div>"]
+    style 11 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    12["<div style='font-weight: bold'>Proveedor de mapas</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Provee los mosaicos del mapa<br />de Arequipa.</div>"]
+    style 12 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    2["<div style='font-weight: bold'>Operador</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Gestiona rutas y paraderos y<br />atiende las alertas de<br />desvío.</div>"]
+    style 2 fill:#08427b,stroke:#052e56,color:#ffffff
+    3["<div style='font-weight: bold'>RutaSIT Arequipa</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Muestra en un mapa la<br />ubicación de los buses y<br />estima su tiempo de llegada a<br />cada paradero.</div>"]
+    style 3 fill:#1168bd,stroke:#0b4884,color:#ffffff
+
+    1-. "<div>Consulta la ubicación de los<br />buses y el ETA a su paradero</div><div style='font-size: 70%'></div>" .->3
+    2-. "<div>Gestiona rutas y paraderos y<br />atiende alertas de desvío</div><div style='font-size: 70%'></div>" .->3
+    11-. "<div>Envía la posición del bus<br />cada 10 s</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->3
+    3-. "<div>Obtiene los mosaicos del mapa</div><div style='font-size: 70%'>[HTTPS]</div>" .->12
+
+  end

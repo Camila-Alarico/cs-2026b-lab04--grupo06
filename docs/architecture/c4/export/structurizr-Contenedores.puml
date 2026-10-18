@@ -1,0 +1,38 @@
+@startuml
+title <size:24>Container View: RutaSIT Arequipa</size>\n<size:24>Nivel 2: contenedores de RutaSIT.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Pasajero, "Pasajero", $descr="Consulta dónde está su bus y cuándo llegará a su paradero.", $tags="", $link="")
+Person(Operador, "Operador", $descr="Gestiona rutas y paraderos y atiende las alertas de desvío.", $tags="", $link="")
+System(DispositivosGPSdelosbuses, "Dispositivos GPS de los buses", $descr="Rastreadores de los 300 buses que reportan su posición.", $tags="", $link="")
+System(Proveedordemapas, "Proveedor de mapas", $descr="Provee los mosaicos del mapa de Arequipa.", $tags="", $link="")
+
+System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
+  ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
+  Container(RutaSITArequipa.Aplicaciónwebprogresiva, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+  Container(RutaSITArequipa.APIRutaSIT, "API RutaSIT", $techn="Python / Django", $descr="Monolito modular que recibe las posiciones GPS, calcula el ETA y detecta desvíos.", $tags="", $link="")
+}
+
+Rel(Pasajero, RutaSITArequipa.Aplicaciónwebprogresiva, "Usa", $techn="HTTPS", $tags="", $link="")
+Rel(Operador, RutaSITArequipa.Aplicaciónwebprogresiva, "Usa", $techn="HTTPS", $tags="", $link="")
+Rel(DispositivosGPSdelosbuses, RutaSITArequipa.APIRutaSIT, "Envía su posición cada 10 s con el token del bus", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT, "Consulta buses, ETA y alertas (polling cada 5 a 10 s)", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, Proveedordemapas, "Carga los mosaicos del mapa", $techn="HTTPS", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT, RutaSITArequipa.Basededatos, "Lee y escribe", $techn="SQL/TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

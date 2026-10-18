@@ -1,0 +1,39 @@
+@startuml
+title <size:24>Deployment View: RutaSIT Arequipa - Producción</size>\n<size:24>Despliegue en producción (MVP).</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Deployment>
+
+Deployment_Node(Producción.CelularoPCdelusuario, "Celular o PC del usuario", $type="Android / navegador web", $descr="Dispositivo del pasajero o del operador", $tags="", $link="") {
+  Container(Producción.CelularoPCdelusuario.Aplicaciónwebprogresiva_1, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+}
+
+Deployment_Node(Producción.ServidorenlanubeVPS, "Servidor en la nube (VPS)", $type="Linux (VPS de bajo costo)", $descr="Un solo servidor de bajo costo (R-03). Incluye proxy inverso Nginx con caché de 3 a 5 s (ADR-002) y monitoreo de logs y métricas.", $tags="", $link="") {
+  Deployment_Node(Producción.ServidorenlanubeVPS.Servidordeaplicación, "Servidor de aplicación", $type="Python / Django", $descr="Ejecuta el monolito modular", $tags="", $link="") {
+    Container(Producción.ServidorenlanubeVPS.Servidordeaplicación.APIRutaSIT_1, "API RutaSIT", $techn="Python / Django", $descr="Monolito modular que recibe las posiciones GPS, calcula el ETA y detecta desvíos.", $tags="", $link="")
+  }
+
+  Deployment_Node(Producción.ServidorenlanubeVPS.Servidordebasededatos, "Servidor de base de datos", $type="PostgreSQL + PostGIS", $descr="Almacena los datos de todos los módulos", $tags="", $link="") {
+    ContainerDb(Producción.ServidorenlanubeVPS.Servidordebasededatos.Basededatos_1, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
+  }
+
+}
+
+Rel(Producción.CelularoPCdelusuario.Aplicaciónwebprogresiva_1, Producción.ServidorenlanubeVPS.Servidordeaplicación.APIRutaSIT_1, "Consulta buses, ETA y alertas (polling cada 5 a 10 s)", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(Producción.ServidorenlanubeVPS.Servidordeaplicación.APIRutaSIT_1, Producción.ServidorenlanubeVPS.Servidordebasededatos.Basededatos_1, "Lee y escribe", $techn="SQL/TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

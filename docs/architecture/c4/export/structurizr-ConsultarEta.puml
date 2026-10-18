@@ -1,0 +1,39 @@
+@startuml
+title <size:24>Dynamic View: RutaSIT Arequipa - API RutaSIT</size>\n<size:24>Dinámico: consultar el ETA de un paradero (HU-01).</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
+  Container_Boundary("RutaSITArequipa.APIRutaSIT_boundary", "API RutaSIT", $tags="") {
+    Component(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Módulo Ubicaciones", $techn="Django app", $descr="Recibe y guarda las posiciones GPS y mantiene el estado de cada viaje.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MóduloETA, "Módulo ETA", $techn="Django app", $descr="Calcula y sirve el tiempo estimado de llegada; marca el dato desactualizado.", $tags="", $link="")
+  }
+
+  ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
+  Container(RutaSITArequipa.Aplicaciónwebprogresiva, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+}
+
+Container(RutaSITArequipa.Aplicaciónwebprogresiva, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
+
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT.MóduloETA, "1: GET /viajes/{idViaje}/paraderos/{codigoParadero}/eta", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "2: Obtiene el viaje y su última posición", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, RutaSITArequipa.Basededatos, "3: Lee el viaje y su última posición", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.Basededatos, "4: Lee el último ETA registrado", $techn="SQL", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

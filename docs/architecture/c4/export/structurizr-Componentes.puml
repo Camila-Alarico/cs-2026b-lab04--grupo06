@@ -1,0 +1,50 @@
+@startuml
+title <size:24>Component View: RutaSIT Arequipa - API RutaSIT</size>\n<size:24>Nivel 3: módulos de la API.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(DispositivosGPSdelosbuses, "Dispositivos GPS de los buses", $descr="Rastreadores de los 300 buses que reportan su posición.", $tags="", $link="")
+
+System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
+  Container_Boundary("RutaSITArequipa.APIRutaSIT_boundary", "API RutaSIT", $tags="") {
+    Component(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Módulo Ubicaciones", $techn="Django app", $descr="Recibe y guarda las posiciones GPS y mantiene el estado de cada viaje.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MóduloRutasyparaderos, "Módulo Rutas y paraderos", $techn="Django app", $descr="Gestiona las rutas, los paraderos y su orden.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MóduloETA, "Módulo ETA", $techn="Django app", $descr="Calcula y sirve el tiempo estimado de llegada; marca el dato desactualizado.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MóduloAlertas, "Módulo Alertas", $techn="Django app", $descr="Detecta desvíos y detenciones de los viajes y registra las alertas.", $tags="", $link="")
+  }
+
+  ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
+  Container(RutaSITArequipa.Aplicaciónwebprogresiva, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+}
+
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Consulta la ubicación de los buses", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT.MóduloETA, "Consulta el ETA de un paradero", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT.MóduloAlertas, "Consulta las alertas de desvío", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT.MóduloRutasyparaderos, "Consulta y gestiona rutas y paraderos", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(DispositivosGPSdelosbuses, RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Envía su posición cada 10 s con el token del bus", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Obtiene el viaje y su última posición", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.APIRutaSIT.MóduloRutasyparaderos, "Obtiene el paradero", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloAlertas, RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Evalúa la posición y cambia el estado del viaje", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloAlertas, RutaSITArequipa.APIRutaSIT.MóduloRutasyparaderos, "Calcula la distancia a la ruta", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, RutaSITArequipa.APIRutaSIT.MóduloRutasyparaderos, "Referencia la ruta del viaje", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, RutaSITArequipa.Basededatos, "Lee y escribe viajes y posiciones", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.Basededatos, "Lee y escribe los ETA", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloAlertas, RutaSITArequipa.Basededatos, "Registra las alertas", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MóduloRutasyparaderos, RutaSITArequipa.Basededatos, "Lee y escribe rutas y paraderos", $techn="SQL", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

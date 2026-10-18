@@ -1,0 +1,36 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Deployment View: RutaSIT Arequipa - Producción"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    subgraph 37 ["Celular o PC del usuario"]
+      style 37 fill:#ffffff,stroke:#444444,color:#444444
+
+      38["<div style='font-weight: bold'>Aplicación web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
+      style 38 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    end
+
+    subgraph 39 ["Servidor en la nube (VPS)"]
+      style 39 fill:#ffffff,stroke:#444444,color:#444444
+
+      subgraph 40 ["Servidor de aplicación"]
+        style 40 fill:#ffffff,stroke:#444444,color:#444444
+
+        41["<div style='font-weight: bold'>API RutaSIT</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Django]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que recibe<br />las posiciones GPS, calcula<br />el ETA y detecta desvíos.</div>"]
+        style 41 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+      subgraph 43 ["Servidor de base de datos"]
+        style 43 fill:#ffffff,stroke:#444444,color:#444444
+
+        44[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />última posición e histórico,<br />ETA y alertas (un esquema por<br />módulo).</div>")]
+        style 44 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+    end
+
+    38-. "<div>Consulta buses, ETA y alertas<br />(polling cada 5 a 10 s)</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->41
+    41-. "<div>Lee y escribe</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->44
+
+  end
