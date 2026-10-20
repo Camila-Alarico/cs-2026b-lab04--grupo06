@@ -10,26 +10,32 @@ graph LR
       subgraph 5 ["API RutaSIT"]
         style 5 fill:#ffffff,stroke:#2e6295,color:#2e6295
 
-        6["<div style='font-weight: bold'>Módulo Ubicaciones</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Recibe y guarda las<br />posiciones GPS y mantiene el<br />estado de cada viaje.</div>"]
+        6["<div style='font-weight: bold'>MÃ³dulo Ubicaciones</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Recibe y guarda las<br />posiciones GPS y mantiene el<br />estado de cada viaje.</div>"]
         style 6 fill:#85bbf0,stroke:#5d82a8,color:#000000
-        8["<div style='font-weight: bold'>Módulo ETA</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Calcula y sirve el tiempo<br />estimado de llegada; marca el<br />dato desactualizado.</div>"]
+        7["<div style='font-weight: bold'>MÃ³dulo Rutas y paraderos</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Gestiona las rutas, los<br />paraderos y su orden.</div>"]
+        style 7 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        8["<div style='font-weight: bold'>MÃ³dulo ETA</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Calcula y sirve el tiempo<br />estimado de llegada; marca el<br />dato desactualizado.</div>"]
         style 8 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        9["<div style='font-weight: bold'>MÃ³dulo Alertas</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Detecta desvÃ­os y<br />detenciones de los viajes y<br />registra las alertas.</div>"]
+        style 9 fill:#85bbf0,stroke:#5d82a8,color:#000000
       end
 
-      10[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />última posición e histórico,<br />ETA y alertas (un esquema por<br />módulo).</div>")]
+      10[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />Ãºltima posiciÃ³n e<br />histÃ³rico, ETA y alertas (un<br />esquema por mÃ³dulo).</div>")]
       style 10 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      4["<div style='font-weight: bold'>Aplicación web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
+      4["<div style='font-weight: bold'>AplicaciÃ³n web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
       style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    4["<div style='font-weight: bold'>Aplicación web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
+    4["<div style='font-weight: bold'>AplicaciÃ³n web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
     style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
-    10[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />última posición e histórico,<br />ETA y alertas (un esquema por<br />módulo).</div>")]
+    10[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />Ãºltima posiciÃ³n e<br />histÃ³rico, ETA y alertas (un<br />esquema por mÃ³dulo).</div>")]
     style 10 fill:#438dd5,stroke:#2e6295,color:#ffffff
 
     4-. "<div>1. GET<br />/viajes/{idViaje}/paraderos/{codigoParadero}/eta</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->8
-    8-. "<div>2. Obtiene el viaje y su<br />última posición</div><div style='font-size: 70%'></div>" .->6
-    6-. "<div>3. Lee el viaje y su última<br />posición</div><div style='font-size: 70%'>[SQL]</div>" .->10
-    8-. "<div>4. Lee el último ETA<br />registrado</div><div style='font-size: 70%'>[SQL]</div>" .->10
+    8-. "<div>2. Obtiene el viaje y su<br />Ãºltima posiciÃ³n</div><div style='font-size: 70%'></div>" .->6
+    6-. "<div>3. Lee y escribe viajes y<br />posiciones</div><div style='font-size: 70%'>[SQL]</div>" .->10
+    8-. "<div>4. Lee y escribe los ETA</div><div style='font-size: 70%'>[SQL]</div>" .->10
+    9-. "<div>5. Registra las alertas</div><div style='font-size: 70%'>[SQL]</div>" .->10
+    7-. "<div>6. Lee y escribe rutas y<br />paraderos</div><div style='font-size: 70%'>[SQL]</div>" .->10
 
   end

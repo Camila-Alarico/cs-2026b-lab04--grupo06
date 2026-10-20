@@ -1,5 +1,5 @@
 @startuml
-title <size:24>Dynamic View: RutaSIT Arequipa - API RutaSIT</size>\n<size:24>Dinámico: consultar el ETA de un paradero (HU-01).</size>
+title <size:24>Dynamic View: RutaSIT Arequipa - API RutaSIT</size>\n<size:24>DinÃ¡mico: consultar el ETA de un paradero (HU-01).</size>
 
 set separator none
 left to right direction
@@ -18,21 +18,25 @@ left to right direction
 
 System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
   Container_Boundary("RutaSITArequipa.APIRutaSIT_boundary", "API RutaSIT", $tags="") {
-    Component(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "Módulo Ubicaciones", $techn="Django app", $descr="Recibe y guarda las posiciones GPS y mantiene el estado de cada viaje.", $tags="", $link="")
-    Component(RutaSITArequipa.APIRutaSIT.MóduloETA, "Módulo ETA", $techn="Django app", $descr="Calcula y sirve el tiempo estimado de llegada; marca el dato desactualizado.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MÃduloUbicaciones, "MÃ³dulo Ubicaciones", $techn="Django app", $descr="Recibe y guarda las posiciones GPS y mantiene el estado de cada viaje.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MÃduloRutasyparaderos, "MÃ³dulo Rutas y paraderos", $techn="Django app", $descr="Gestiona las rutas, los paraderos y su orden.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MÃduloETA, "MÃ³dulo ETA", $techn="Django app", $descr="Calcula y sirve el tiempo estimado de llegada; marca el dato desactualizado.", $tags="", $link="")
+    Component(RutaSITArequipa.APIRutaSIT.MÃduloAlertas, "MÃ³dulo Alertas", $techn="Django app", $descr="Detecta desvÃ­os y detenciones de los viajes y registra las alertas.", $tags="", $link="")
   }
 
-  ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
-  Container(RutaSITArequipa.Aplicaciónwebprogresiva, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+  ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, Ãºltima posiciÃ³n e histÃ³rico, ETA y alertas (un esquema por mÃ³dulo).", $tags="", $link="")
+  Container(RutaSITArequipa.AplicaciÃnwebprogresiva, "AplicaciÃ³n web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
 }
 
-Container(RutaSITArequipa.Aplicaciónwebprogresiva, "Aplicación web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
-ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo).", $tags="", $link="")
+Container(RutaSITArequipa.AplicaciÃnwebprogresiva, "AplicaciÃ³n web progresiva", $techn="PWA (HTML y JavaScript)", $descr="Interfaz para pasajeros y operadores: mapa, ETA y alertas.", $tags="", $link="")
+ContainerDb(RutaSITArequipa.Basededatos, "Base de datos", $techn="PostgreSQL + PostGIS", $descr="Rutas, paraderos, viajes, Ãºltima posiciÃ³n e histÃ³rico, ETA y alertas (un esquema por mÃ³dulo).", $tags="", $link="")
 
-Rel(RutaSITArequipa.Aplicaciónwebprogresiva, RutaSITArequipa.APIRutaSIT.MóduloETA, "1: GET /viajes/{idViaje}/paraderos/{codigoParadero}/eta", $techn="HTTPS/JSON", $tags="", $link="")
-Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, "2: Obtiene el viaje y su última posición", $techn="", $tags="", $link="")
-Rel(RutaSITArequipa.APIRutaSIT.MóduloUbicaciones, RutaSITArequipa.Basededatos, "3: Lee el viaje y su última posición", $techn="SQL", $tags="", $link="")
-Rel(RutaSITArequipa.APIRutaSIT.MóduloETA, RutaSITArequipa.Basededatos, "4: Lee el último ETA registrado", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.AplicaciÃnwebprogresiva, RutaSITArequipa.APIRutaSIT.MÃduloETA, "1: GET /viajes/{idViaje}/paraderos/{codigoParadero}/eta", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MÃduloETA, RutaSITArequipa.APIRutaSIT.MÃduloUbicaciones, "2: Obtiene el viaje y su Ãºltima posiciÃ³n", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MÃduloUbicaciones, RutaSITArequipa.Basededatos, "3: Lee y escribe viajes y posiciones", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MÃduloETA, RutaSITArequipa.Basededatos, "4: Lee y escribe los ETA", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MÃduloAlertas, RutaSITArequipa.Basededatos, "5: Registra las alertas", $techn="SQL", $tags="", $link="")
+Rel(RutaSITArequipa.APIRutaSIT.MÃduloRutasyparaderos, RutaSITArequipa.Basededatos, "6: Lee y escribe rutas y paraderos", $techn="SQL", $tags="", $link="")
 
 SHOW_LEGEND(true)
 hide stereotypes

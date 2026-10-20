@@ -17,18 +17,18 @@ workspace "RutaSIT Arequipa" "Modelo C4 del seguimiento en tiempo real de los bu
             db = container "Base de datos" "Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo)." "PostgreSQL + PostGIS" "Database"
         }
 
-        gps = softwareSystem "Dispositivos GPS de los buses" "Rastreadores de los 300 buses que reportan su posición." "Externo"
-        mapas = softwareSystem "Proveedor de mapas" "Provee los mosaicos del mapa de Arequipa." "Externo"
+        gps = softwareSystem "Dispositivos GPS de los buses" "Sistema externo: rastreadores de los 300 buses que reportan su posición." "Externo"
+        mapas = softwareSystem "Proveedor de mapas" "Sistema externo: provee los mosaicos del mapa de Arequipa." "Externo"
 
         pasajero -> rutasit "Consulta la ubicación de los buses y el ETA a su paradero"
         operador -> rutasit "Gestiona rutas y paraderos y atiende alertas de desvío"
-        gps -> rutasit "Envía la posición del bus cada 10 s" "HTTPS/JSON"
+        gps -> rutasit "Envía su posición cada 10 s" "HTTPS/JSON"
         rutasit -> mapas "Obtiene los mosaicos del mapa" "HTTPS"
 
-        pasajero -> rutasit.pwa "Usa" "HTTPS"
-        operador -> rutasit.pwa "Usa" "HTTPS"
+        pasajero -> rutasit.pwa "Consulta buses y ETA" "HTTPS"
+        operador -> rutasit.pwa "Gestiona rutas y paraderos y atiende alertas" "HTTPS"
+        rutasit.pwa -> rutasit.api "Consulta buses, ETA y alertas, y gestiona rutas (polling de 5 a 10 s)" "HTTPS/JSON"
         gps -> rutasit.api "Envía su posición cada 10 s con el token del bus" "HTTPS/JSON"
-        rutasit.pwa -> rutasit.api "Consulta buses, ETA y alertas (polling cada 5 a 10 s)" "HTTPS/JSON"
         rutasit.pwa -> mapas "Carga los mosaicos del mapa" "HTTPS"
         rutasit.api -> rutasit.db "Lee y escribe" "SQL/TCP"
 
@@ -51,13 +51,19 @@ workspace "RutaSIT Arequipa" "Modelo C4 del seguimiento en tiempo real de los bu
             deploymentNode "Celular o PC del usuario" "Dispositivo del pasajero o del operador" "Android / navegador web" {
                 containerInstance rutasit.pwa
             }
-            deploymentNode "Servidor en la nube (VPS)" "Un solo servidor de bajo costo (R-03). Incluye proxy inverso Nginx con caché de 3 a 5 s (ADR-002) y monitoreo de logs y métricas." "Linux (VPS de bajo costo)" {
+            deploymentNode "Bus" "Equipo GPS a bordo de cada bus" "Equipo a bordo" {
+                softwareSystemInstance gps
+            }
+            deploymentNode "Servidor en la nube (VPS)" "Un solo servidor de bajo costo que aloja la API y la base de datos. El proxy inverso Nginx y el monitoreo no se dibujan en esta vista (ver despliegue.puml del Lab 04)." "Linux (VPS de bajo costo)" {
                 deploymentNode "Servidor de aplicación" "Ejecuta el monolito modular" "Python / Django" {
                     containerInstance rutasit.api
                 }
                 deploymentNode "Servidor de base de datos" "Almacena los datos de todos los módulos" "PostgreSQL + PostGIS" {
                     containerInstance rutasit.db
                 }
+            }
+            deploymentNode "Nube del proveedor de mapas" "Servicio externo" "Internet" {
+                softwareSystemInstance mapas
             }
         }
     }
@@ -78,8 +84,10 @@ workspace "RutaSIT Arequipa" "Modelo C4 del seguimiento en tiempo real de los bu
         dynamic rutasit.api "ConsultarEta" "Dinámico: consultar el ETA de un paradero (HU-01)." {
             rutasit.pwa -> rutasit.api.eta "GET /viajes/{idViaje}/paraderos/{codigoParadero}/eta"
             rutasit.api.eta -> rutasit.api.ubicaciones "Obtiene el viaje y su última posición"
-            rutasit.api.ubicaciones -> rutasit.db "Lee el viaje y su última posición"
-            rutasit.api.eta -> rutasit.db "Lee el último ETA registrado"
+            rutasit.api.ubicaciones -> rutasit.db "Lee y escribe viajes y posiciones" "SQL"
+            rutasit.api.eta -> rutasit.db "Lee y escribe los ETA" "SQL"
+            rutasit.api.alertas -> rutasit.db "Registra las alertas" "SQL"
+            rutasit.api.rutas -> rutasit.db "Lee y escribe rutas y paraderos" "SQL"
             autolayout lr
         }
         deployment rutasit produccion "Despliegue" "Despliegue en producción (MVP)." {

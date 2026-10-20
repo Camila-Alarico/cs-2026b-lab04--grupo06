@@ -4,30 +4,30 @@ graph LR
   subgraph diagram ["Container View: RutaSIT Arequipa"]
     style diagram fill:#ffffff,stroke:#ffffff
 
-    1["<div style='font-weight: bold'>Pasajero</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Consulta dónde está su bus y<br />cuándo llegará a su paradero.</div>"]
+    1["<div style='font-weight: bold'>Pasajero</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Consulta dÃ³nde estÃ¡ su bus<br />y cuÃ¡ndo llegarÃ¡ a su<br />paradero.</div>"]
     style 1 fill:#08427b,stroke:#052e56,color:#ffffff
-    2["<div style='font-weight: bold'>Operador</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Gestiona rutas y paraderos y<br />atiende las alertas de<br />desvío.</div>"]
+    2["<div style='font-weight: bold'>Operador</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Gestiona rutas y paraderos y<br />atiende las alertas de<br />desvÃ­o.</div>"]
     style 2 fill:#08427b,stroke:#052e56,color:#ffffff
-    11["<div style='font-weight: bold'>Dispositivos GPS de los buses</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Rastreadores de los 300 buses<br />que reportan su posición.</div>"]
+    11["<div style='font-weight: bold'>Dispositivos GPS de los buses</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Sistema externo: rastreadores<br />de los 300 buses que reportan<br />su posiciÃ³n.</div>"]
     style 11 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    12["<div style='font-weight: bold'>Proveedor de mapas</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Provee los mosaicos del mapa<br />de Arequipa.</div>"]
+    12["<div style='font-weight: bold'>Proveedor de mapas</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Sistema externo: provee los<br />mosaicos del mapa de<br />Arequipa.</div>"]
     style 12 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
     subgraph 3 ["RutaSIT Arequipa"]
       style 3 fill:#ffffff,stroke:#0b4884,color:#0b4884
 
-      10[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />última posición e histórico,<br />ETA y alertas (un esquema por<br />módulo).</div>")]
+      10[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL + PostGIS]</div><div style='font-size: 80%; margin-top:10px'>Rutas, paraderos, viajes,<br />Ãºltima posiciÃ³n e<br />histÃ³rico, ETA y alertas (un<br />esquema por mÃ³dulo).</div>")]
       style 10 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      4["<div style='font-weight: bold'>Aplicación web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
+      4["<div style='font-weight: bold'>AplicaciÃ³n web progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: PWA (HTML y JavaScript)]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para pasajeros y<br />operadores: mapa, ETA y<br />alertas.</div>"]
       style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      5["<div style='font-weight: bold'>API RutaSIT</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Django]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que recibe<br />las posiciones GPS, calcula<br />el ETA y detecta desvíos.</div>"]
+      5["<div style='font-weight: bold'>API RutaSIT</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Django]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que recibe<br />las posiciones GPS, calcula<br />el ETA y detecta desvÃ­os.</div>"]
       style 5 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    1-. "<div>Usa</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
-    2-. "<div>Usa</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
-    11-. "<div>Envía su posición cada 10 s<br />con el token del bus</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->5
-    4-. "<div>Consulta buses, ETA y alertas<br />(polling cada 5 a 10 s)</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->5
+    1-. "<div>Consulta buses y ETA</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+    2-. "<div>Gestiona rutas y paraderos y<br />atiende alertas</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+    4-. "<div>Consulta buses, ETA y<br />alertas, y gestiona rutas<br />(polling de 5 a 10 s)</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->5
+    11-. "<div>EnvÃ­a su posiciÃ³n cada 10 s<br />con el token del bus</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->5
     4-. "<div>Carga los mosaicos del mapa</div><div style='font-size: 70%'>[HTTPS]</div>" .->12
     5-. "<div>Lee y escribe</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->10
 
