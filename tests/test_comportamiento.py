@@ -11,7 +11,7 @@ AHORA = datetime(2026, 10, 20, 8, 0, 0)
 P1, P2, P3 = (-16.400, -71.530), (-16.410, -71.530), (-16.420, -71.530)
 
 
-@pytest.fixture(params=["rutasit.antes.servicio"])  # E2 agrega "rutasit.servicio" (versión con patrones)
+@pytest.fixture(params=["rutasit.antes.servicio", "rutasit.servicio"])
 def m(request):
     return importlib.import_module(request.param)
 
@@ -152,7 +152,17 @@ def test_algoritmo_promedio_y_algoritmo_desconocido(m):
     with pytest.raises(ValueError):
         malo.actualizar_bus("V1", "OPERADOR_A")
 
-
+def test_algoritmo_desconocido_no_altera_el_viaje(m, request):
+    if m.__name__.endswith("antes.servicio"):
+        request.applymarker(pytest.mark.xfail(
+            strict=True, reason="Bug de la versión antes: guarda la posición y recién después falla"))
+    s, gps = servicio_con_gps_a(m, algoritmo="MAGICO")
+    v = viaje_en_ruta(m, s)
+    gps.lectura = lectura_a(*P1)
+    with pytest.raises(ValueError):
+        s.actualizar_bus("V1", "OPERADOR_A")
+    assert v.ultima_posicion is None
+    
 # ---------- desvío, detención y reanudación (RF-05, RF-04) ----------
 def test_tres_lecturas_fuera_de_ruta_marcan_desviado_y_alertan(m):
     s, gps = servicio_con_gps_a(m)
