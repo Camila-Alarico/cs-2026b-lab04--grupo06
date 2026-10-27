@@ -1,26 +1,14 @@
-"""Versión con patrones (Lab 07). E2: Strategy + Adapter + Factory para operadores GPS y algoritmo de ETA."""
+"""Versión con patrones (Lab 07). E2: Strategy + Adapter + Factory. E3: State para el ciclo de vida del Viaje."""
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from datetime import datetime
 
-from rutasit.dominio import (Bus, Eta, EstadoEta, EstadoViaje, Paradero, ParaderoDeRuta,
-                             PosicionGPS, ResultadoEta, Ruta)
+from rutasit.dominio import (Bus, Eta, EstadoEta, EstadoViaje, Paradero, ParaderoDeRuta,  # noqa: F401
+                             PosicionGPS, ResultadoEta, Ruta, Viaje)
 from rutasit.fabricas import Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto
 from rutasit.gps import FuenteGps
 from rutasit.geo import distancia_a_ruta_m, distancia_m
-
-
-@dataclass
-class Viaje:
-    id: str
-    ruta: Ruta
-    bus: Bus
-    estado: EstadoViaje = EstadoViaje.PROGRAMADO
-    ultima_posicion: PosicionGPS | None = None
-    lecturas_fuera_de_ruta: int = 0
-    detenido_desde: datetime | None = None
 
 
 class ServicioRutaSIT:
@@ -55,27 +43,16 @@ class ServicioRutaSIT:
         self.suscripciones.setdefault(codigo_paradero, []).append(token)
 
     def iniciar_viaje(self, id_viaje: str) -> None:
-        viaje = self.viajes[id_viaje]
-        if viaje.estado != EstadoViaje.PROGRAMADO:
-            if viaje.estado == EstadoViaje.FINALIZADO:
-                raise ValueError("El viaje ya finalizó")
-            else:
-                raise ValueError("El viaje ya está iniciado")
-        viaje.estado = EstadoViaje.EN_RUTA
+        self.viajes[id_viaje].iniciar()
 
     def finalizar_viaje(self, id_viaje: str) -> None:
-        viaje = self.viajes[id_viaje]
-        if viaje.estado == EstadoViaje.PROGRAMADO:
-            raise ValueError("No se puede finalizar un viaje programado")
-        elif viaje.estado == EstadoViaje.FINALIZADO:
-            raise ValueError("El viaje ya finalizó")
-        viaje.estado = EstadoViaje.FINALIZADO
+        self.viajes[id_viaje].finalizar()
 
     def actualizar_bus(self, id_viaje: str, operador: str) -> EstadoViaje:
         viaje = self.viajes.get(id_viaje)
         if viaje is None:
             raise ValueError(f"El viaje no existe: {id_viaje}")
-        if viaje.estado == EstadoViaje.PROGRAMADO or viaje.estado == EstadoViaje.FINALIZADO:
+        if not viaje.en_curso():
             raise ValueError("El viaje no está en curso")
         fuente = self.fabrica_gps.crear(operador)
         algoritmo = self.fabrica_algoritmos.crear(self.algoritmo)
@@ -87,28 +64,11 @@ class ServicioRutaSIT:
         puntos = [(p.paradero.latitud, p.paradero.longitud) for p in viaje.ruta.paraderos]
         fuera = distancia_a_ruta_m(lectura.latitud, lectura.longitud, puntos) > self.umbral_desvio_metros
         viaje.lecturas_fuera_de_ruta = viaje.lecturas_fuera_de_ruta + 1 if fuera else 0
-        if viaje.estado == EstadoViaje.EN_RUTA:
-            if viaje.lecturas_fuera_de_ruta >= self.lecturas_para_desvio:
-                viaje.estado = EstadoViaje.DESVIADO
-                self.eventos.append(f"alerta_operador:{viaje.id}:DESVIO")
+        for tipo in viaje.procesar_lectura(lectura, fuera, self.lecturas_para_desvio, self.segundos_para_detencion):
+            self.eventos.append(f"alerta_operador:{viaje.id}:{tipo}")
+            if tipo == "DESVIO":
                 self.eventos.append(f"alerta_pasajero:{viaje.id}:DESVIO")
-            elif lectura.velocidad == 0:
-                if viaje.detenido_desde is None:
-                    viaje.detenido_desde = lectura.marca_tiempo
-                elif (lectura.marca_tiempo - viaje.detenido_desde).total_seconds() >= self.segundos_para_detencion:
-                    viaje.estado = EstadoViaje.DETENIDO
-                    self.eventos.append(f"alerta_operador:{viaje.id}:DETENCION")
-            else:
-                viaje.detenido_desde = None
-        elif viaje.estado == EstadoViaje.DESVIADO:
-            if not fuera:
-                viaje.estado = EstadoViaje.EN_RUTA
-                viaje.lecturas_fuera_de_ruta = 0
-        elif viaje.estado == EstadoViaje.DETENIDO:
-            if lectura.velocidad > 0:
-                viaje.estado = EstadoViaje.EN_RUTA
-                viaje.detenido_desde = None
-        if viaje.estado == EstadoViaje.EN_RUTA:
+        if viaje.esta_en_ruta():
             for pr in viaje.ruta.paraderos:
                 p = pr.paradero
                 d = distancia_m(lectura.latitud, lectura.longitud, p.latitud, p.longitud)
@@ -131,7 +91,7 @@ class ServicioRutaSIT:
 
     def consultar_eta(self, id_viaje: str, codigo_paradero: str) -> ResultadoEta:
         viaje = self.viajes.get(id_viaje)
-        if viaje is None or viaje.estado != EstadoViaje.EN_RUTA:
+        if viaje is None or not viaje.esta_en_ruta():
             return ResultadoEta(EstadoEta.NO_DISPONIBLE, "No hay ETA disponible para este viaje")
         eta = self.etas.get((id_viaje, codigo_paradero))
         if viaje.ultima_posicion is None or eta is None:

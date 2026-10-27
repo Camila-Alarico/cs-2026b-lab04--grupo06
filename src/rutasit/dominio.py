@@ -5,13 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-
-class EstadoViaje(Enum):
-    PROGRAMADO = "Programado"
-    EN_RUTA = "EnRuta"
-    DESVIADO = "Desviado"
-    DETENIDO = "Detenido"
-    FINALIZADO = "Finalizado"
+from rutasit.estados import EstadoDeViaje, EstadoViaje, Programado  # noqa: F401  (EstadoViaje se re-exporta)
 
 
 class EstadoEta(Enum):
@@ -65,29 +59,48 @@ class PosicionGPS:
 
 @dataclass
 class Viaje:
+    """Contexto del patrón State: delega en su estado actual (ver estados.py y estados-viaje.mmd)."""
     id: str
     ruta: Ruta
     bus: Bus
-    estado: EstadoViaje = EstadoViaje.PROGRAMADO
     posiciones: list[PosicionGPS] = field(default_factory=list)
+    ultima_posicion: PosicionGPS | None = None
+    lecturas_fuera_de_ruta: int = 0
+    detenido_desde: datetime | None = None
+    _estado: EstadoDeViaje = field(init=False, default_factory=Programado, repr=False)
+
+    @property
+    def estado(self) -> EstadoViaje:
+        return self._estado.estado
+
+    def cambiar_a(self, nuevo: EstadoDeViaje) -> None:
+        self._estado = nuevo
 
     def esta_en_ruta(self) -> bool:
-        return self.estado == EstadoViaje.EN_RUTA
+        return self._estado.esta_en_ruta()
+
+    def en_curso(self) -> bool:
+        return self._estado.en_curso()
 
     def iniciar(self) -> None:
-        self.estado = EstadoViaje.EN_RUTA
+        self._estado.iniciar(self)
 
     def marcar_desviado(self) -> None:
-        self.estado = EstadoViaje.DESVIADO
+        self._estado.marcar_desviado(self)
 
     def marcar_detenido(self) -> None:
-        self.estado = EstadoViaje.DETENIDO
+        self._estado.marcar_detenido(self)
 
     def reanudar(self) -> None:
-        self.estado = EstadoViaje.EN_RUTA
+        self._estado.reanudar(self)
 
     def finalizar(self) -> None:
-        self.estado = EstadoViaje.FINALIZADO
+        self._estado.finalizar(self)
+
+    def procesar_lectura(self, lectura: PosicionGPS, fuera_de_ruta: bool,
+                         lecturas_para_desvio: int, segundos_para_detencion: int) -> list[str]:
+        return self._estado.procesar_lectura(self, lectura, fuera_de_ruta,
+                                             lecturas_para_desvio, segundos_para_detencion)
 
 
 @dataclass

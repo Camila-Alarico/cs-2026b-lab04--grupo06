@@ -152,6 +152,7 @@ def test_algoritmo_promedio_y_algoritmo_desconocido(m):
     with pytest.raises(ValueError):
         malo.actualizar_bus("V1", "OPERADOR_A")
 
+
 def test_algoritmo_desconocido_no_altera_el_viaje(m, request):
     if m.__name__.endswith("antes.servicio"):
         request.applymarker(pytest.mark.xfail(
@@ -162,7 +163,8 @@ def test_algoritmo_desconocido_no_altera_el_viaje(m, request):
     with pytest.raises(ValueError):
         s.actualizar_bus("V1", "OPERADOR_A")
     assert v.ultima_posicion is None
-    
+
+
 # ---------- desvío, detención y reanudación (RF-05, RF-04) ----------
 def test_tres_lecturas_fuera_de_ruta_marcan_desviado_y_alertan(m):
     s, gps = servicio_con_gps_a(m)

@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 
-from rutasit.dominio import (Bus, Eta, EstadoEta, EstadoViaje, Paradero, ParaderoDeRuta,  # noqa: F401
+from rutasit.dominio import (Bus, Eta, EstadoEta, EstadoViaje, Paradero, ParaderoDeRuta,
                              PosicionGPS, ResultadoEta, Ruta)
 from rutasit.geo import distancia_a_ruta_m, distancia_m
 

@@ -5,6 +5,7 @@ import pytest
 
 from rutasit.algoritmos_eta import AlgoritmoEta, DistanciaDirecta, VelocidadPromedio
 from rutasit.dominio import Bus, EstadoEta, Paradero, ParaderoDeRuta, PosicionGPS, Ruta
+from rutasit.estados import EstadoViaje
 from rutasit.externos import GpsOperadorA, GpsOperadorB
 from rutasit.fabricas import Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto
 from rutasit.gps import FuenteGps, OperadorAAdapter, OperadorBAdapter
@@ -93,3 +94,49 @@ def test_open_closed_nuevo_algoritmo_eta_sin_modificar_el_servicio():
     s = servicio_en_ruta(gps_a=gps, algoritmo="FIJO_5_MIN", fabrica_algoritmos=fabrica)
     s.actualizar_bus("V1", "OPERADOR_A")
     assert s.consultar_eta("V1", "P2").eta.minutos_estimados == 5
+
+
+# ---------- State ----------
+OPERACIONES = {
+    "iniciar": EstadoViaje.EN_RUTA,
+    "marcar_desviado": EstadoViaje.DESVIADO,
+    "marcar_detenido": EstadoViaje.DETENIDO,
+    "reanudar": EstadoViaje.EN_RUTA,
+    "finalizar": EstadoViaje.FINALIZADO,
+}
+# Las 8 transiciones de estados-viaje.mmd: estado -> operaciones permitidas
+PERMITIDAS = {
+    EstadoViaje.PROGRAMADO: {"iniciar"},
+    EstadoViaje.EN_RUTA: {"marcar_desviado", "marcar_detenido", "finalizar"},
+    EstadoViaje.DESVIADO: {"reanudar", "finalizar"},
+    EstadoViaje.DETENIDO: {"reanudar", "finalizar"},
+    EstadoViaje.FINALIZADO: set(),
+}
+CAMINO = {
+    EstadoViaje.PROGRAMADO: [],
+    EstadoViaje.EN_RUTA: ["iniciar"],
+    EstadoViaje.DESVIADO: ["iniciar", "marcar_desviado"],
+    EstadoViaje.DETENIDO: ["iniciar", "marcar_detenido"],
+    EstadoViaje.FINALIZADO: ["iniciar", "finalizar"],
+}
+
+
+def viaje_en(estado):
+    v = Viaje("V1", ruta(), Bus("ABC-123"))
+    for operacion in CAMINO[estado]:
+        getattr(v, operacion)()
+    assert v.estado == estado
+    return v
+
+
+@pytest.mark.parametrize("operacion", list(OPERACIONES))
+@pytest.mark.parametrize("estado", list(EstadoViaje))
+def test_state_impide_transiciones_invalidas(estado, operacion):
+    v = viaje_en(estado)
+    if operacion in PERMITIDAS[estado]:
+        getattr(v, operacion)()
+        assert v.estado == OPERACIONES[operacion]
+    else:
+        with pytest.raises(ValueError):
+            getattr(v, operacion)()
+        assert v.estado == estado  # una transición inválida no cambia el estado
