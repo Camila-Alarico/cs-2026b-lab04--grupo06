@@ -1,0 +1,16 @@
+@startuml
+class Viaje <<Context>>
+abstract class EstadoDeViaje <<State>>
+class Programado
+class EnRuta
+class Desviado
+class Detenido
+class Finalizado
+
+Viaje o-- EstadoDeViaje : estado actual
+EstadoDeViaje <|-- Programado
+EstadoDeViaje <|-- EnRuta
+EstadoDeViaje <|-- Desviado
+EstadoDeViaje <|-- Detenido
+EstadoDeViaje <|-- Finalizado
+@endumls

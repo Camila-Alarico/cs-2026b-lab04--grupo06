@@ -1,0 +1,15 @@
+ @startuml
+skinparam classAttributeIconSize 0
+
+interface AlgoritmoEta <<Strategy>> {
+  +segundos(distancia_m, velocidad_kmh)
+}
+
+class DistanciaDirecta
+class VelocidadPromedio
+class ServicioRutaSIT
+
+AlgoritmoEta <|.. DistanciaDirecta
+AlgoritmoEta <|.. VelocidadPromedio
+ServicioRutaSIT ..> AlgoritmoEta : utiliza
+@enduml

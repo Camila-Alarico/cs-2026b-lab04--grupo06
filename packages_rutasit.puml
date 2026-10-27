@@ -1,7 +1,45 @@
-@startuml packages_rutasit
+@startuml packages_RutaSIT
 set namespaceSeparator none
 package "rutasit" as rutasit {
 }
+package "rutasit.algoritmos_eta" as rutasit.algoritmos_eta {
+}
+package "rutasit.antes" as rutasit.antes {
+}
+package "rutasit.antes.servicio" as rutasit.antes.servicio {
+}
 package "rutasit.dominio" as rutasit.dominio {
 }
+package "rutasit.estados" as rutasit.estados {
+}
+package "rutasit.eventos" as rutasit.eventos {
+}
+package "rutasit.externos" as rutasit.externos {
+}
+package "rutasit.fabricas" as rutasit.fabricas {
+}
+package "rutasit.geo" as rutasit.geo {
+}
+package "rutasit.gps" as rutasit.gps {
+}
+package "rutasit.ia" as rutasit.ia {
+}
+package "rutasit.notificadores" as rutasit.notificadores {
+}
+package "rutasit.servicio" as rutasit.servicio {
+}
+rutasit.antes.servicio --> rutasit.dominio
+rutasit.antes.servicio --> rutasit.geo
+rutasit.dominio --> rutasit.estados
+rutasit.fabricas --> rutasit.algoritmos_eta
+rutasit.fabricas --> rutasit.gps
+rutasit.fabricas --> rutasit.ia
+rutasit.gps --> rutasit.dominio
+rutasit.notificadores --> rutasit.eventos
+rutasit.servicio --> rutasit.dominio
+rutasit.servicio --> rutasit.eventos
+rutasit.servicio --> rutasit.fabricas
+rutasit.servicio --> rutasit.geo
+rutasit.servicio --> rutasit.ia
+rutasit.servicio --> rutasit.notificadores
 @enduml

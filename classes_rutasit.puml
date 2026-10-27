@@ -1,22 +1,120 @@
-@startuml classes_rutasit
+@startuml classes_RutaSIT
 set namespaceSeparator none
 class "Alerta" as rutasit.dominio.Alerta {
   hora_generacion : datetime
   id_viaje : str
   tipo : str
 }
+class "AlgoritmoEta" as rutasit.algoritmos_eta.AlgoritmoEta {
+  {abstract}segundos(distancia_m: float, velocidad_kmh: float) -> float
+}
+class "AvisoDesvioPasajeros" as rutasit.notificadores.AvisoDesvioPasajeros {
+  actualizar(evento: str, datos: dict) -> None
+}
+class "AvisoLlegadaPasajero" as rutasit.notificadores.AvisoLlegadaPasajero {
+  actualizar(evento: str, datos: dict) -> None
+}
 class "Bus" as rutasit.dominio.Bus {
   placa : str
+}
+class "ConCache" as rutasit.ia.ConCache {
+  completar(prompt: str) -> str
+}
+class "ConReintentos" as rutasit.gps.ConReintentos {
+  leer(placa: str) -> PosicionGPS
+}
+class "Desviado" as rutasit.estados.Desviado {
+  estado : DESVIADO
+  en_curso() -> bool
+  finalizar(viaje) -> None
+  procesar_lectura(viaje, lectura, fuera_de_ruta, lecturas_para_desvio, segundos_para_detencion)
+  reanudar(viaje) -> None
+}
+class "Detenido" as rutasit.estados.Detenido {
+  estado : DETENIDO
+  en_curso() -> bool
+  finalizar(viaje) -> None
+  procesar_lectura(viaje, lectura, fuera_de_ruta, lecturas_para_desvio, segundos_para_detencion)
+  reanudar(viaje) -> None
+}
+class "DistanciaDirecta" as rutasit.algoritmos_eta.DistanciaDirecta {
+  segundos(distancia_m: float, velocidad_kmh: float) -> float
+}
+class "EnRuta" as rutasit.estados.EnRuta {
+  estado : EN_RUTA
+  en_curso() -> bool
+  esta_en_ruta() -> bool
+  finalizar(viaje) -> None
+  marcar_desviado(viaje) -> None
+  marcar_detenido(viaje) -> None
+  procesar_lectura(viaje, lectura, fuera_de_ruta, lecturas_para_desvio, segundos_para_detencion)
+}
+class "EstadoDeViaje" as rutasit.estados.EstadoDeViaje {
+  estado
+  en_curso() -> bool
+  esta_en_ruta() -> bool
+  finalizar(viaje) -> None
+  iniciar(viaje) -> None
+  marcar_desviado(viaje) -> None
+  marcar_detenido(viaje) -> None
+  procesar_lectura(viaje, lectura, fuera_de_ruta: bool, lecturas_para_desvio: int, segundos_para_detencion: int) -> list[str]
+  reanudar(viaje) -> None
 }
 class "EstadoEta" as rutasit.dominio.EstadoEta {
   name
 }
-class "EstadoViaje" as rutasit.dominio.EstadoViaje {
+class "EstadoViaje" as rutasit.estados.EstadoViaje {
   name
 }
 class "Eta" as rutasit.dominio.Eta {
   hora_calculo : datetime
   minutos_estimados : int
+}
+class "Fabrica" as rutasit.fabricas.Fabrica {
+  crear(nombre: str)
+  registrar(nombre: str, creador: Callable[[], object]) -> None
+}
+class "Finalizado" as rutasit.estados.Finalizado {
+  estado : FINALIZADO
+}
+class "FuenteGps" as rutasit.gps.FuenteGps {
+  {abstract}leer(placa: str) -> PosicionGPS
+}
+class "GpsOperadorA" as rutasit.externos.GpsOperadorA {
+  lectura : dict | None
+  ultima_lectura(placa: str) -> dict
+}
+class "GpsOperadorB" as rutasit.externos.GpsOperadorB {
+  lectura : tuple | None
+  leer(placa: str) -> tuple
+}
+class "Guardrail" as rutasit.ia.Guardrail {
+  validar(texto: str) -> str
+}
+class "LlmLocalSDK" as rutasit.externos.LlmLocalSDK {
+  respuesta : str
+  predict(prompt: str) -> str
+}
+class "LlmNubeSDK" as rutasit.externos.LlmNubeSDK {
+  respuesta : str
+  generate(prompt: str) -> dict
+}
+class "LocalAdapter" as rutasit.ia.LocalAdapter {
+  completar(prompt: str) -> str
+}
+class "LongitudMaxima" as rutasit.ia.LongitudMaxima {
+}
+class "NotificadorOperador" as rutasit.notificadores.NotificadorOperador {
+  actualizar(evento: str, datos: dict) -> None
+}
+class "NubeAdapter" as rutasit.ia.NubeAdapter {
+  completar(prompt: str) -> str
+}
+class "OperadorAAdapter" as rutasit.gps.OperadorAAdapter {
+  leer(placa: str) -> PosicionGPS
+}
+class "OperadorBAdapter" as rutasit.gps.OperadorBAdapter {
+  leer(placa: str) -> PosicionGPS
 }
 class "Paradero" as rutasit.dominio.Paradero {
   codigo : str
@@ -35,6 +133,17 @@ class "PosicionGPS" as rutasit.dominio.PosicionGPS {
   velocidad : float
   antiguedad_segundos(ahora: datetime) -> int
   es_reciente(ahora: datetime, umbral_antiguedad_segundos: int) -> bool
+}
+class "Programado" as rutasit.estados.Programado {
+  estado : PROGRAMADO
+  iniciar(viaje) -> None
+}
+class "ProveedorLLM" as rutasit.ia.ProveedorLLM {
+  {abstract}completar(prompt: str) -> str
+}
+class "PublicadorEventos" as rutasit.eventos.PublicadorEventos {
+  publicar(evento: str, datos: dict) -> None
+  suscribir(evento: str, suscriptor: Suscriptor) -> None
 }
 class "RegistroMetricas" as rutasit.dominio.RegistroMetricas {
   {abstract}registrar(nombre: str, valor: int) -> None
@@ -85,25 +194,144 @@ class "ServicioEta" as rutasit.dominio.ServicioEta {
   consultar_eta(id_viaje: str, codigo_paradero: str) -> ResultadoEta
   {abstract}recalcular_eta(id_viaje: str, posicion: PosicionGPS) -> None
 }
+class "ServicioRutaSIT" as rutasit.servicio.ServicioRutaSIT {
+  algoritmo : str
+  etas : dict[tuple[str, str], Eta]
+  eventos : list[str]
+  fabrica_algoritmos
+  fabrica_gps
+  fabrica_llm
+  gps_a : NoneType
+  gps_b : NoneType
+  guardrails
+  lecturas_para_desvio : int
+  metricas : list[tuple[str, int]]
+  minutos_aviso : int
+  publicador
+  reloj
+  segundos_para_detencion : int
+  umbral_antiguedad_segundos : int
+  umbral_desvio_metros : float
+  velocidad_promedio_kmh : float
+  viajes : dict[str, Viaje]
+  actualizar_bus(id_viaje: str, operador: str) -> EstadoViaje
+  consultar_eta(id_viaje: str, codigo_paradero: str) -> ResultadoEta
+  explicar_retraso(id_viaje: str, proveedor: str) -> str
+  finalizar_viaje(id_viaje: str) -> None
+  iniciar_viaje(id_viaje: str) -> None
+  registrar_viaje(viaje: Viaje) -> None
+  suscribir(codigo_paradero: str, token: str) -> None
+}
+class "ServicioRutaSIT" as rutasit.antes.servicio.ServicioRutaSIT {
+  algoritmo : str
+  etas : dict[tuple[str, str], Eta]
+  eventos : list[str]
+  gps_a : NoneType
+  gps_b : NoneType
+  lecturas_para_desvio : int
+  llm_local : NoneType
+  llm_nube : NoneType
+  metricas : list[tuple[str, int]]
+  minutos_aviso : int
+  reloj
+  segundos_para_detencion : int
+  suscripciones : dict[str, list[str]]
+  umbral_antiguedad_segundos : int
+  umbral_desvio_metros : float
+  velocidad_promedio_kmh : float
+  viajes : dict[str, Viaje]
+  actualizar_bus(id_viaje: str, operador: str) -> EstadoViaje
+  consultar_eta(id_viaje: str, codigo_paradero: str) -> ResultadoEta
+  explicar_retraso(id_viaje: str, proveedor: str) -> str
+  finalizar_viaje(id_viaje: str) -> None
+  iniciar_viaje(id_viaje: str) -> None
+  registrar_viaje(viaje: Viaje) -> None
+  suscribir(codigo_paradero: str, token: str) -> None
+}
+class "SinCulparAlConductor" as rutasit.ia.SinCulparAlConductor {
+  PROHIBIDAS : list
+}
+class "SinHoraInventada" as rutasit.ia.SinHoraInventada {
+}
+class "Suscriptor" as rutasit.eventos.Suscriptor {
+  {abstract}actualizar(evento: str, datos: dict) -> None
+}
+class "VelocidadPromedio" as rutasit.algoritmos_eta.VelocidadPromedio {
+  segundos(distancia_m: float, velocidad_kmh: float) -> float
+}
 class "Viaje" as rutasit.dominio.Viaje {
   bus
-  estado
+  detenido_desde : datetime | None
+  estado : EstadoViaje
   id : str
+  lecturas_fuera_de_ruta : int
   posiciones : list[PosicionGPS]
   ruta
+  ultima_posicion : PosicionGPS | None
+  cambiar_a(nuevo: EstadoDeViaje) -> None
+  en_curso() -> bool
   esta_en_ruta() -> bool
   finalizar() -> None
   iniciar() -> None
   marcar_desviado() -> None
   marcar_detenido() -> None
+  procesar_lectura(lectura: PosicionGPS, fuera_de_ruta: bool, lecturas_para_desvio: int, segundos_para_detencion: int) -> list[str]
   reanudar() -> None
 }
+class "Viaje" as rutasit.antes.servicio.Viaje {
+  bus
+  detenido_desde : datetime | None
+  estado
+  id : str
+  lecturas_fuera_de_ruta : int
+  ruta
+  ultima_posicion : PosicionGPS | None
+}
+class "_ConFallas" as rutasit.externos._ConFallas {
+  fallas : int
+  llamadas : int
+}
+rutasit.algoritmos_eta.DistanciaDirecta --|> rutasit.algoritmos_eta.AlgoritmoEta
+rutasit.algoritmos_eta.VelocidadPromedio --|> rutasit.algoritmos_eta.AlgoritmoEta
 rutasit.dominio.RepositorioPosicionesPostgres --|> rutasit.dominio.RepositorioPosiciones
+rutasit.estados.Desviado --|> rutasit.estados.EstadoDeViaje
+rutasit.estados.Detenido --|> rutasit.estados.EstadoDeViaje
+rutasit.estados.EnRuta --|> rutasit.estados.EstadoDeViaje
+rutasit.estados.Finalizado --|> rutasit.estados.EstadoDeViaje
+rutasit.estados.Programado --|> rutasit.estados.EstadoDeViaje
+rutasit.externos.GpsOperadorA --|> rutasit.externos._ConFallas
+rutasit.externos.GpsOperadorB --|> rutasit.externos._ConFallas
+rutasit.externos.LlmLocalSDK --|> rutasit.externos._ConFallas
+rutasit.externos.LlmNubeSDK --|> rutasit.externos._ConFallas
+rutasit.gps.ConReintentos --|> rutasit.gps.FuenteGps
+rutasit.gps.OperadorAAdapter --|> rutasit.gps.FuenteGps
+rutasit.gps.OperadorBAdapter --|> rutasit.gps.FuenteGps
+rutasit.ia.ConCache --|> rutasit.ia.ProveedorLLM
+rutasit.ia.LocalAdapter --|> rutasit.ia.ProveedorLLM
+rutasit.ia.LongitudMaxima --|> rutasit.ia.Guardrail
+rutasit.ia.NubeAdapter --|> rutasit.ia.ProveedorLLM
+rutasit.ia.SinCulparAlConductor --|> rutasit.ia.Guardrail
+rutasit.ia.SinHoraInventada --|> rutasit.ia.Guardrail
+rutasit.notificadores.AvisoDesvioPasajeros --|> rutasit.eventos.Suscriptor
+rutasit.notificadores.AvisoLlegadaPasajero --|> rutasit.eventos.Suscriptor
+rutasit.notificadores.NotificadorOperador --|> rutasit.eventos.Suscriptor
+rutasit.antes.servicio.ServicioRutaSIT --> rutasit.antes.servicio.Viaje : viajes
+rutasit.antes.servicio.Viaje --> rutasit.dominio.Bus : bus
 rutasit.dominio.Viaje --> rutasit.dominio.Bus : bus
 rutasit.dominio.ResultadoEta --> rutasit.dominio.EstadoEta : estado
-rutasit.dominio.Viaje --> rutasit.dominio.EstadoViaje : estado
+rutasit.antes.servicio.ServicioRutaSIT --> rutasit.dominio.Eta : etas
+rutasit.servicio.ServicioRutaSIT --> rutasit.dominio.Eta : etas
 rutasit.dominio.ParaderoDeRuta --> rutasit.dominio.Paradero : paradero
+rutasit.antes.servicio.Viaje --> rutasit.dominio.Ruta : ruta
 rutasit.dominio.Viaje --> rutasit.dominio.Ruta : ruta
+rutasit.servicio.ServicioRutaSIT --> rutasit.dominio.Viaje : viajes
+rutasit.antes.servicio.Viaje --> rutasit.estados.EstadoViaje : estado
+rutasit.estados.EstadoDeViaje --> rutasit.estados.EstadoViaje : estado
+rutasit.servicio.ServicioRutaSIT --> rutasit.eventos.PublicadorEventos : publicador
+rutasit.servicio.ServicioRutaSIT --> rutasit.fabricas.Fabrica : fabrica_gps
+rutasit.servicio.ServicioRutaSIT --> rutasit.fabricas.Fabrica : fabrica_algoritmos
+rutasit.servicio.ServicioRutaSIT --> rutasit.fabricas.Fabrica : fabrica_llm
+rutasit.servicio.ServicioRutaSIT --> rutasit.ia.SinHoraInventada : guardrails
 rutasit.dominio.RegistroMetricas --o rutasit.dominio.ServicioEta : registro_metricas
 rutasit.dominio.RepositorioAlertas --o rutasit.dominio.ServicioAlertas : repositorio_alertas
 rutasit.dominio.RepositorioEta --o rutasit.dominio.ServicioEta : repositorio_eta

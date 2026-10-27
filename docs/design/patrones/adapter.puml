@@ -1,0 +1,17 @@
+@startuml
+interface FuenteGps <<Target>> {
+  +leer(placa)
+}
+
+class OperadorAAdapter <<Adapter>>
+class OperadorBAdapter <<Adapter>>
+class ConReintentos <<Decorator>>
+class PosicionGPS
+
+FuenteGps <|.. OperadorAAdapter
+FuenteGps <|.. OperadorBAdapter
+FuenteGps <|.. ConReintentos
+OperadorAAdapter ..> PosicionGPS : crea
+OperadorBAdapter ..> PosicionGPS : crea
+ConReintentos o-- FuenteGps : envuelve
+@enduml

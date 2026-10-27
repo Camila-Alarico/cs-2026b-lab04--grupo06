@@ -1,0 +1,14 @@
+@startuml
+interface Suscriptor <<Observer>> {
+  +actualizar(evento, datos)
+}
+class PublicadorEventos <<Subject>>
+class NotificadorOperador
+class AvisoDesvioPasajeros
+class AvisoLlegadaPasajero
+
+Suscriptor <|.. NotificadorOperador
+Suscriptor <|.. AvisoDesvioPasajeros
+Suscriptor <|.. AvisoLlegadaPasajero
+PublicadorEventos --> Suscriptor : notifica
+@enduml
