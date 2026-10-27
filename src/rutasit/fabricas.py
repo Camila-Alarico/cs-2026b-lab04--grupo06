@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Callable
 
 from rutasit.algoritmos_eta import DistanciaDirecta, VelocidadPromedio
-from rutasit.gps import OperadorAAdapter, OperadorBAdapter
+from rutasit.gps import ConReintentos, OperadorAAdapter, OperadorBAdapter
 
 
 class Fabrica:
@@ -25,8 +25,8 @@ class Fabrica:
 
 def fabrica_gps_por_defecto(gps_a=None, gps_b=None) -> Fabrica:
     fabrica = Fabrica("Operador GPS")
-    fabrica.registrar("OPERADOR_A", lambda: OperadorAAdapter(gps_a))
-    fabrica.registrar("OPERADOR_B", lambda: OperadorBAdapter(gps_b))
+    fabrica.registrar("OPERADOR_A", lambda: ConReintentos(OperadorAAdapter(gps_a)))
+    fabrica.registrar("OPERADOR_B", lambda: ConReintentos(OperadorBAdapter(gps_b)))
     return fabrica
 
 

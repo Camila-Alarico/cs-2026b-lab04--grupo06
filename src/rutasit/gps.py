@@ -36,3 +36,23 @@ class OperadorBAdapter(FuenteGps):
     def leer(self, placa: str) -> PosicionGPS:
         lat_e6, lon_e6, vel_ms, epoch = self._sdk.leer(placa)
         return PosicionGPS(lat_e6 / 1e6, lon_e6 / 1e6, vel_ms * 3.6, datetime.fromtimestamp(epoch))
+
+
+class ConReintentos(FuenteGps):
+    """<<Decorator>>: reintenta ante TimeoutError (red móvil con cortes, R-04) sin tocar los adapters.
+
+    Solo reintenta TimeoutError; cualquier otro error se propaga de inmediato.
+    Si se agotan los intentos, relanza el TimeoutError: decidir "sin señal" es del servicio (QA-02).
+    """
+
+    def __init__(self, interna: FuenteGps, intentos: int = 3):
+        self._interna = interna
+        self._intentos = intentos
+
+    def leer(self, placa: str) -> PosicionGPS:
+        for intento in range(self._intentos):
+            try:
+                return self._interna.leer(placa)
+            except TimeoutError:
+                if intento == self._intentos - 1:
+                    raise

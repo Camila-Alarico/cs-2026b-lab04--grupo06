@@ -50,7 +50,7 @@ class EstadoDeViaje:
 
     def procesar_lectura(self, viaje, lectura, fuera_de_ruta: bool,
                          lecturas_para_desvio: int, segundos_para_detencion: int) -> list[str]:
-        """Reacciona a una lectura GPS. Devuelve los tipos de alerta generados ('DESVIO', 'DETENCION')."""
+        """Reacciona a una lectura GPS. Devuelve los eventos generados ('desvio_detectado', 'detencion_detectada')."""
         return []
 
 
@@ -82,13 +82,13 @@ class EnRuta(EstadoDeViaje):
     def procesar_lectura(self, viaje, lectura, fuera_de_ruta, lecturas_para_desvio, segundos_para_detencion):
         if viaje.lecturas_fuera_de_ruta >= lecturas_para_desvio:
             viaje.marcar_desviado()
-            return ["DESVIO"]
+            return ["desvio_detectado"]
         if lectura.velocidad == 0:
             if viaje.detenido_desde is None:
                 viaje.detenido_desde = lectura.marca_tiempo
             elif (lectura.marca_tiempo - viaje.detenido_desde).total_seconds() >= segundos_para_detencion:
                 viaje.marcar_detenido()
-                return ["DETENCION"]
+                return ["detencion_detectada"]
         else:
             viaje.detenido_desde = None
         return []

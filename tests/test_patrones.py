@@ -8,7 +8,8 @@ from rutasit.dominio import Bus, EstadoEta, Paradero, ParaderoDeRuta, PosicionGP
 from rutasit.estados import EstadoViaje
 from rutasit.externos import GpsOperadorA, GpsOperadorB
 from rutasit.fabricas import Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto
-from rutasit.gps import FuenteGps, OperadorAAdapter, OperadorBAdapter
+from rutasit.eventos import PublicadorEventos, Suscriptor
+from rutasit.gps import ConReintentos, FuenteGps, OperadorAAdapter, OperadorBAdapter
 from rutasit.servicio import ServicioRutaSIT, Viaje
 
 AHORA = datetime(2026, 10, 20, 8, 0, 0)
@@ -140,3 +141,80 @@ def test_state_impide_transiciones_invalidas(estado, operacion):
         with pytest.raises(ValueError):
             getattr(v, operacion)()
         assert v.estado == estado  # una transición inválida no cambia el estado
+
+
+# ---------- Decorator: ConReintentos ----------
+class FuenteFalsa(FuenteGps):
+    def __init__(self, fallas=0, error=TimeoutError):
+        self.fallas, self.error, self.llamadas = fallas, error, 0
+
+    def leer(self, placa):
+        self.llamadas += 1
+        if self.llamadas <= self.fallas:
+            raise self.error("falla simulada")
+        return PosicionGPS(P1[0], P1[1], 20.0, AHORA)
+
+
+def test_decorator_reintenta_ante_timeout_y_es_una_fuente_gps():
+    interna = FuenteFalsa(fallas=2)
+    fuente = ConReintentos(interna)
+    assert isinstance(fuente, FuenteGps)
+    assert fuente.leer("ABC-123").latitud == P1[0]
+    assert interna.llamadas == 3
+
+
+def test_decorator_relanza_timeout_al_agotar_los_intentos():
+    interna = FuenteFalsa(fallas=5)
+    with pytest.raises(TimeoutError):
+        ConReintentos(interna, intentos=3).leer("ABC-123")
+    assert interna.llamadas == 3
+
+
+def test_decorator_no_reintenta_errores_que_no_son_timeout():
+    interna = FuenteFalsa(fallas=1, error=ValueError)
+    with pytest.raises(ValueError):
+        ConReintentos(interna).leer("ABC-123")
+    assert interna.llamadas == 1
+
+
+# ---------- Observer ----------
+class Auditoria(Suscriptor):
+    def __init__(self):
+        self.registro = []
+
+    def actualizar(self, evento, datos):
+        self.registro.append((evento, datos["id_viaje"]))
+
+
+def lectura_desviada():
+    return {"lat": -16.405, "lng": -71.520, "vel_kmh": 20.0, "ts": (AHORA - timedelta(seconds=5)).isoformat()}
+
+
+def test_observer_el_desvio_notifica_a_operador_y_pasajeros():
+    gps = GpsOperadorA()
+    gps.lectura = lectura_desviada()
+    s = servicio_en_ruta(gps_a=gps)
+    for _ in range(3):
+        s.actualizar_bus("V1", "OPERADOR_A")
+    assert s.eventos == ["alerta_operador:V1:DESVIO", "alerta_pasajero:V1:DESVIO"]
+
+
+def test_observer_nuevo_suscriptor_sin_tocar_el_servicio():
+    auditoria = Auditoria()
+    gps = GpsOperadorA()
+    gps.lectura = lectura_desviada()
+    s = servicio_en_ruta(gps_a=gps)
+    s.publicador.suscribir("desvio_detectado", auditoria)
+    for _ in range(3):
+        s.actualizar_bus("V1", "OPERADOR_A")
+    assert auditoria.registro == [("desvio_detectado", "V1")]
+
+
+def test_observer_publicador_sin_suscriptores_no_falla_y_notifica_a_todos():
+    publicador = PublicadorEventos()
+    publicador.publicar("nada", {"id_viaje": "V1"})  # sin suscriptores: no pasa nada
+    a, b = Auditoria(), Auditoria()
+    publicador.suscribir("x", a)
+    publicador.suscribir("x", b)
+    publicador.publicar("x", {"id_viaje": "V1"})
+    assert a.registro == b.registro == [("x", "V1")]
