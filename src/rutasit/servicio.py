@@ -1,13 +1,14 @@
 """Versión con patrones (Lab 07). E2: Strategy + Adapter + Factory. E3: State. E4: Observer (eventos) y Decorator (reintentos GPS)."""
 from __future__ import annotations
 
-import re
 from datetime import datetime
 
 from rutasit.dominio import (Bus, Eta, EstadoEta, EstadoViaje, Paradero, ParaderoDeRuta,  # noqa: F401
                              PosicionGPS, ResultadoEta, Ruta, Viaje)
-from rutasit.fabricas import Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto
+from rutasit.fabricas import (Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto,
+                              fabrica_llm_por_defecto)
 from rutasit.eventos import PublicadorEventos
+from rutasit.ia import Guardrail, cadena_guardrails_por_defecto
 from rutasit.notificadores import (AvisoLlegadaPasajero, SIN_SENAL,
                                    evento_eta_cercano, publicador_por_defecto)
 from rutasit.geo import distancia_a_ruta_m, distancia_m
@@ -18,9 +19,9 @@ class ServicioRutaSIT:
                  reloj=datetime.now, umbral_antiguedad_segundos=30, umbral_desvio_metros=100.0,
                  lecturas_para_desvio=3, segundos_para_detencion=60, velocidad_promedio_kmh=20.0,
                  minutos_aviso=3, fabrica_gps: Fabrica | None = None,
-                 fabrica_algoritmos: Fabrica | None = None, publicador: PublicadorEventos | None = None):
+                 fabrica_algoritmos: Fabrica | None = None, publicador: PublicadorEventos | None = None,
+                 fabrica_llm: Fabrica | None = None, guardrails: Guardrail | None = None):
         self.gps_a, self.gps_b = gps_a, gps_b
-        self.llm_nube, self.llm_local = llm_nube, llm_local
         self.algoritmo = algoritmo
         self.reloj = reloj
         self.umbral_antiguedad_segundos = umbral_antiguedad_segundos
@@ -32,6 +33,8 @@ class ServicioRutaSIT:
         self.fabrica_gps = fabrica_gps if fabrica_gps is not None else fabrica_gps_por_defecto(gps_a, gps_b)
         self.fabrica_algoritmos = (fabrica_algoritmos if fabrica_algoritmos is not None
                                    else fabrica_algoritmos_por_defecto(velocidad_promedio_kmh))
+        self.fabrica_llm = fabrica_llm if fabrica_llm is not None else fabrica_llm_por_defecto(llm_nube, llm_local)
+        self.guardrails = guardrails if guardrails is not None else cadena_guardrails_por_defecto()
         self.viajes: dict[str, Viaje] = {}
         self.etas: dict[tuple[str, str], Eta] = {}
         self.eventos: list[str] = []
@@ -101,17 +104,5 @@ class ServicioRutaSIT:
         if not eventos:
             return "No hay eventos registrados para este viaje"
         prompt = f"Explica en una frase el retraso del bus {viaje.bus.placa} según estos eventos: {eventos}"
-        if proveedor == "NUBE":
-            texto = self.llm_nube.generate(prompt)["texto"]
-        elif proveedor == "LOCAL":
-            texto = self.llm_local.predict(prompt)
-        else:
-            raise ValueError(f"Proveedor de IA no soportado: {proveedor}")
-        if re.search(r"\d{1,2}:\d{2}", texto):
-            raise ValueError("Guardrail: la IA inventó una hora")
-        for palabra in ["conductor", "chofer", "culpa"]:
-            if palabra in texto.lower():
-                raise ValueError(f"Guardrail: atribución no permitida '{palabra}'")
-        if len(texto) > 280:
-            raise ValueError("Guardrail: respuesta demasiado larga")
-        return texto
+        texto = self.fabrica_llm.crear(proveedor).completar(prompt)
+        return self.guardrails.validar(texto)

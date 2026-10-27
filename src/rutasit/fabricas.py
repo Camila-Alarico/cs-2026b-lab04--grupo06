@@ -5,6 +5,7 @@ from typing import Callable
 
 from rutasit.algoritmos_eta import DistanciaDirecta, VelocidadPromedio
 from rutasit.gps import ConReintentos, OperadorAAdapter, OperadorBAdapter
+from rutasit.ia import ConCache, LocalAdapter, NubeAdapter
 
 
 class Fabrica:
@@ -34,4 +35,14 @@ def fabrica_algoritmos_por_defecto(velocidad_promedio_kmh: float = 20.0) -> Fabr
     fabrica = Fabrica("Algoritmo de ETA")
     fabrica.registrar("DIRECTO", DistanciaDirecta)
     fabrica.registrar("PROMEDIO", lambda: VelocidadPromedio(velocidad_promedio_kmh))
+    return fabrica
+
+
+def fabrica_llm_por_defecto(llm_nube=None, llm_local=None) -> Fabrica:
+    """Cada proveedor se crea UNA vez envuelto en su caché, para que la caché viva entre consultas."""
+    nube = ConCache(NubeAdapter(llm_nube))
+    local = ConCache(LocalAdapter(llm_local))
+    fabrica = Fabrica("Proveedor de IA")
+    fabrica.registrar("NUBE", lambda: nube)
+    fabrica.registrar("LOCAL", lambda: local)
     return fabrica

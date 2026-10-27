@@ -6,10 +6,13 @@ import pytest
 from rutasit.algoritmos_eta import AlgoritmoEta, DistanciaDirecta, VelocidadPromedio
 from rutasit.dominio import Bus, EstadoEta, Paradero, ParaderoDeRuta, PosicionGPS, Ruta
 from rutasit.estados import EstadoViaje
-from rutasit.externos import GpsOperadorA, GpsOperadorB
-from rutasit.fabricas import Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto
+from rutasit.externos import GpsOperadorA, GpsOperadorB, LlmLocalSDK, LlmNubeSDK
+from rutasit.fabricas import (Fabrica, fabrica_algoritmos_por_defecto, fabrica_gps_por_defecto,
+                              fabrica_llm_por_defecto)
 from rutasit.eventos import PublicadorEventos, Suscriptor
 from rutasit.gps import ConReintentos, FuenteGps, OperadorAAdapter, OperadorBAdapter
+from rutasit.ia import (ConCache, Guardrail, LocalAdapter, LongitudMaxima, NubeAdapter, ProveedorLLM,
+                        SinCulparAlConductor, SinHoraInventada, cadena_guardrails_por_defecto)
 from rutasit.servicio import ServicioRutaSIT, Viaje
 
 AHORA = datetime(2026, 10, 20, 8, 0, 0)
@@ -218,3 +221,89 @@ def test_observer_publicador_sin_suscriptores_no_falla_y_notifica_a_todos():
     publicador.suscribir("x", b)
     publicador.publicar("x", {"id_viaje": "V1"})
     assert a.registro == b.registro == [("x", "V1")]
+
+
+# ---------- E5: IA aislada ----------
+VALIDA = "El bus se desvió de su ruta habitual."
+
+
+def servicio_con_ia(**kw):
+    s = servicio_en_ruta(**kw)
+    s.eventos.append("alerta_operador:V1:DESVIO")
+    return s
+
+
+# Strategy + Adapter: el mismo puerto para cualquier proveedor
+@pytest.mark.parametrize("proveedor", [NubeAdapter(LlmNubeSDK(VALIDA)), LocalAdapter(LlmLocalSDK(VALIDA))])
+def test_ia_adapters_son_proveedores_sustituibles(proveedor):
+    assert isinstance(proveedor, ProveedorLLM)
+    assert proveedor.completar("hola") == VALIDA
+
+
+def test_ia_open_closed_nuevo_proveedor_sin_modificar_el_servicio():
+    class ProveedorFijo(ProveedorLLM):
+        def completar(self, prompt):
+            return "Hubo tráfico en la ruta."
+
+    fabrica = fabrica_llm_por_defecto()
+    fabrica.registrar("FIJO", ProveedorFijo)
+    assert servicio_con_ia(fabrica_llm=fabrica).explicar_retraso("V1", "FIJO") == "Hubo tráfico en la ruta."
+
+
+# Decorator: caché
+def test_decorator_cache_evita_llamadas_repetidas():
+    sdk = LlmLocalSDK(VALIDA)
+    proveedor = ConCache(LocalAdapter(sdk))
+    assert isinstance(proveedor, ProveedorLLM)
+    assert proveedor.completar("p1") == proveedor.completar("p1") == VALIDA
+    assert sdk.llamadas == 1
+    proveedor.completar("p2")  # otro prompt: sí se consulta
+    assert sdk.llamadas == 2
+
+
+def test_decorator_cache_el_servicio_no_paga_dos_veces_la_misma_explicacion():
+    sdk = LlmNubeSDK(VALIDA)
+    s = servicio_con_ia(llm_nube=sdk)
+    assert s.explicar_retraso("V1", "NUBE") == s.explicar_retraso("V1", "NUBE") == VALIDA
+    assert sdk.llamadas == 1
+
+
+# Chain of Responsibility: guardrails
+@pytest.mark.parametrize("guardrail, invalido", [
+    (SinHoraInventada(), "Llegará a las 08:15 sin falta."),
+    (SinCulparAlConductor(), "Fue por culpa del conductor."),
+    (LongitudMaxima(), "x" * 281),
+])
+def test_guardrail_cada_eslabon_bloquea_su_caso_y_deja_pasar_lo_valido(guardrail, invalido):
+    assert guardrail.validar(VALIDA) == VALIDA
+    with pytest.raises(ValueError, match="Guardrail"):
+        guardrail.validar(invalido)
+
+
+def test_guardrail_la_cadena_valida_en_orden_y_bloquea_lo_invalido():
+    cadena = cadena_guardrails_por_defecto()
+    assert cadena.validar(VALIDA) == VALIDA
+    with pytest.raises(ValueError, match="hora"):
+        cadena.validar("Llegará a las 08:15 por culpa del chofer.")  # el primer eslabón que falla corta la cadena
+    with pytest.raises(ValueError, match="chofer"):
+        cadena.validar("Se retrasó por el chofer.")
+
+
+def test_guardrail_nuevo_eslabon_sin_tocar_el_servicio():
+    class SinSignosDeAdmiracion(Guardrail):
+        def _aplicar(self, texto):
+            if "!" in texto:
+                raise ValueError("Guardrail: tono no permitido")
+            return texto
+
+    cadena = SinSignosDeAdmiracion(cadena_guardrails_por_defecto())
+    s = servicio_con_ia(llm_local=LlmLocalSDK("¡El bus se desvió!"), guardrails=cadena)
+    with pytest.raises(ValueError, match="tono"):
+        s.explicar_retraso("V1", "LOCAL")
+
+
+def test_guardrail_el_servicio_no_entrega_una_hora_inventada_ni_con_cache():
+    s = servicio_con_ia(llm_nube=LlmNubeSDK("Llega a las 09:30."))
+    for _ in range(2):  # la 2.ª respuesta sale de la caché y también se valida
+        with pytest.raises(ValueError, match="hora"):
+            s.explicar_retraso("V1", "NUBE")
