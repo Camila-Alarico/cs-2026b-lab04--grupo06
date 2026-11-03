@@ -1,0 +1,37 @@
+digraph arbol {
+  rankdir=LR;
+  graph [fontname="Helvetica", nodesep=0.25, ranksep=0.55, labelloc=b,
+         label="Fig. Árbol de utilidad de RutaSIT 2.0 (1200 buses, 50 000 consultas de ETA en hora punta). Cada hoja: (importancia, dificultad)"];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [color="#888888", arrowhead=none];
+
+  utilidad [label="Utilidad\nRutaSIT 2.0", fillcolor="#1f3a5f", fontcolor=white, fontsize=12];
+
+  // Atributos de calidad
+  rend [label="Rendimiento\n(tiempo real)", fillcolor="#c8301a", fontcolor=white];
+  disp [label="Disponibilidad",             fillcolor="#c8301a", fontcolor=white];
+  segu [label="Seguridad",                  fillcolor="#c8301a", fontcolor=white];
+  modi [label="Modificabilidad",            fillcolor="#c8301a", fontcolor=white];
+  utilidad -> {rend disp segu modi};
+
+  // Refinamientos
+  r1 [label="Ingesta y ETA\nen tiempo real", fillcolor="#f4b9b0"];
+  r2 [label="Consulta en\nhora punta",       fillcolor="#f4b9b0"];
+  d1 [label="Buses sin señal",               fillcolor="#f4b9b0"];
+  d2 [label="Caída del servidor\n(VPS único)", fillcolor="#f4b9b0"];
+  s1 [label="Ingreso de posiciones\nno autorizadas", fillcolor="#f4b9b0"];
+  m1 [label="Nuevas rutas y\nalgoritmo de ETA", fillcolor="#f4b9b0"];
+  m2 [label="Nuevo operador\nde GPS",          fillcolor="#f4b9b0"];
+  rend -> {r1 r2}; disp -> {d1 d2}; segu -> s1; modi -> {m1 m2};
+
+  // Escenarios (hojas)
+  node [fillcolor="#eef1f6", fontsize=9];
+  q1 [label="(H,H) QA-01: 1200 buses a 120 msg/s en hora punta\n→ ETA disponible en ≤ 15 s (p95)"];
+  q4 [label="(H,M) QA-04: 50 000 consultas de ETA en la hora punta\n→ p95 de respuesta ≤ 1 s"];
+  q2 [label="(H,L) QA-02: un bus sin señal\n→ 'desactualizado' en ≤ 30 s y 0 errores en los otros 1199"];
+  q5 [label="(M,M) QA-05: reinicio del servidor en hora punta\n→ consulta disponible en ≤ 2 min y ETA al día en ≤ 30 s"];
+  q6 [label="(M,L) QA-06: 1000 posiciones/min sin token de bus válido\n→ 0 aceptadas"];
+  q3 [label="(M,L) QA-03: nueva ruta o cambio del algoritmo de ETA\n→ ≤ 2 días-persona"];
+  q7 [label="(M,L) QA-07: nuevo operador de GPS con otro formato\n→ ≤ 1 día-persona sin modificar el servicio"];
+  r1 -> q1; r2 -> q4; d1 -> q2; d2 -> q5; s1 -> q6; m1 -> q3; m2 -> q7;
+}
