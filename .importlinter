@@ -1,0 +1,35 @@
+[importlinter]
+root_package = rutasit
+
+[importlinter:contract:capas]
+name = FF-01 Capas del monolito modular sin ciclos (ADR-001)
+type = layers
+layers =
+    rutasit.servicio
+    rutasit.fabricas | rutasit.notificadores
+    rutasit.gps | rutasit.algoritmos_eta
+    rutasit.dominio | rutasit.eventos | rutasit.geo
+    rutasit.estados
+
+[importlinter:contract:adaptadores]
+name = FF-02 Solo la fabrica conoce los adaptadores y los servicios externos (ADR-005)
+type = forbidden
+source_modules =
+    rutasit.servicio
+    rutasit.dominio
+    rutasit.estados
+    rutasit.eventos
+    rutasit.notificadores
+    rutasit.algoritmos_eta
+forbidden_modules =
+    rutasit.gps
+    rutasit.externos
+allow_indirect_imports = True
+
+[importlinter:contract:independencia]
+name = FF-03 Los modulos no se invocan entre si (ADR-001)
+type = independence
+modules =
+    rutasit.gps
+    rutasit.algoritmos_eta
+    rutasit.notificadores
