@@ -152,6 +152,43 @@ cd docs/architecture/c4
 java -jar plantuml.jar -tpng -o ../img export/*.puml
 ```
 
+## Patrones de diseño (Lab 07)
+
+La refactorización de RutaSIT busca reducir el acoplamiento y separar las responsabilidades del servicio principal.
+
+### Olor de código, patrón y prueba
+
+| Olor de código | Patrón aplicado | Prueba relacionada |
+|---|---|---|
+| Condicionales para elegir el algoritmo ETA | Strategy | `test_las_estrategias_son_sustituibles` |
+| Formatos y unidades GPS incompatibles | Adapter | `test_adapters_traducen_cada_sdk_a_la_misma_posicion` |
+| Creación dispersa de implementaciones | Factory | `test_fabrica_rechaza_un_nombre_no_registrado` |
+| Reglas de estado mezcladas con el servicio | State | Pruebas del ciclo de vida en `test_comportamiento.py` |
+| Notificaciones acopladas al flujo principal | Observer | Pruebas de publicación y recepción de eventos en `test_patrones.py` |
+| Reintentos mezclados con la integración GPS | Decorator | Pruebas de `ConReintentos` en `test_patrones.py` |
+| Validaciones de respuestas de IA mezcladas | Chain of Responsibility | Pruebas de los guardrails en `test_patrones.py` |
+
+### Métricas antes y después
+
+Los valores se obtienen mediante Radon y se documentan en `metricas.md`.
+
+| Métrica | Antes | Después |
+|---|---:|---:|
+| Complejidad ciclomática promedio de los métodos comparados | Consultar `metricas.md` | Consultar `metricas.md` |
+| SLOC del archivo principal del servicio | Consultar `metricas.md` | Consultar `metricas.md` |
+
+### Verificación
+
+Las pruebas de comportamiento comparan la implementación original y la refactorizada. Las pruebas específicas de patrones comprueban las responsabilidades y extensiones incorporadas.
+
+Ejecutar las pruebas desde la raíz del proyecto:
+
+```bash
+pytest -v
+```
+
+Los diagramas PlantUML se encuentran en `docs/design/`. La decisión arquitectónica se documenta en `docs/adr/ADR-005-patrones.md`.
+
 
 ## Reflexión sobre el uso de la IA
 La IA es una herramienta muy útil al momento de hacer diversas actividades, siendo una de esas el crear alternativas y escoger las mejores, lo que pasa es que no podemos depender completamente de estas ya que estas suelen contener errores al momento de crear. Un ejemplo de esta ayuda fue en la creacion de este laboratorio donde se uso Claude y ChatGPT los cuales ayudaron a generar tres alternativas de estilo, a criticarlas y a redactar el código de los diagramas. Claude afirmó que su alternativa era la única que atacaba el atributo crítico y planteó una mitigación incoherente (reconstruir el estado desde PostgreSQL sin haber persistido antes los datos) cosa que era un error en lo que se buscaba; ambas lo reconocieron al criticarse a sí mismas. ChatGPT recomendó WebSocket sin considerar que la carga depende de los pasajeros conectados y no de los 300 buses. Al final siempre se necesita que una persona verifique lo que te manda para tener una mejor coherencia y un buen trabajo.

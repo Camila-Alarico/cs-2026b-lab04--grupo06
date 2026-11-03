@@ -19,3 +19,10 @@
 | FP1 | Falso positivo | "El cálculo de ETA en Python no escala a 120 mensajes/s" | `fitness/medir_logica.py`: 120 × 0,08 ms ≈ 10 ms de CPU por segundo, cerca del 1 % de un núcleo | **Refutado con evidencia** |
 
 ## Matriz de probabilidad e impacto
+### Interpretación de la matriz de riesgos
+
+La matriz identifica tres riesgos críticos para RutaSIT. El primero es la dependencia de un único VPS, cuyo fallo podría interrumpir todo el servicio. Se acepta para el MVP debido a las restricciones de presupuesto y plazo, estableciendo respaldos diarios y un plan de recuperación.
+
+El segundo riesgo corresponde a la acumulación de posiciones GPS después de una caída. Se mitigó mediante la estrategia de procesar primero la posición más reciente de cada bus. La simulación de la iteración 3 redujo el tiempo de recuperación de 93 segundos a aproximadamente 11,7 segundos, cumpliendo el presupuesto de QA-05.
+
+El tercer riesgo es el crecimiento del histórico, estimado en 10,4 millones de filas diarias. Se acepta temporalmente, pero requiere implementar particionado por día y definir una política de retención. Los riesgos R4 y R5 se mantienen en nivel medio y cuentan con medidas de mitigación propuestas que todavía requieren validación.
