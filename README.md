@@ -189,6 +189,46 @@ pytest -v
 
 Los diagramas PlantUML se encuentran en `docs/design/`. La decisión arquitectónica se documenta en `docs/adr/ADR-005-patrones.md`.
 
+## Diseño de la arquitectura (Lab 08)
+
+### Árbol de utilidad
+
+RutaSIT prioriza los siguientes atributos de calidad:
+
+1. **Rendimiento:** mantener actualizado el ETA de los buses dentro del presupuesto establecido por QA-01.
+2. **Disponibilidad:** permitir que la consulta de los demás buses continúe cuando uno pierde señal, según QA-02.
+3. **Modificabilidad:** permitir agregar rutas, paraderos o cambiar el algoritmo de ETA sin modificar los demás módulos, según QA-03.
+4. **Rendimiento de consultas:** atender las consultas de ETA dentro del presupuesto de QA-04.
+5. **Recuperación:** restablecer el ETA después de una caída del servidor dentro del tiempo establecido por QA-05.
+6. **Seguridad:** autenticar los dispositivos GPS para evitar el envío de posiciones no autorizadas, según QA-06.
+
+### Iteraciones de diseño ADD
+
+| Iteración | Escenario | Táctica o decisión | Evidencia | ¿Cumple? |
+|---|---|---|---|---|
+| 1 | QA-01: ingesta de 1200 buses | Escritura del histórico por lotes, fuera del camino crítico | Simulación M/G/c: margen de 1,30x con histórico por lotes | Sí, en la simulación |
+| 2 | QA-04: 50 000 consultas de ETA por hora | Índice por paradero y caché del proxy | Simulación de consultas: p95 de 27 ms con índice y caché | Sí, en la simulación |
+| 3 | QA-05: recuperación después de una caída | Priorizar la posición más reciente de cada bus y enviar las anteriores al histórico por lotes | Simulación de recuperación: aproximadamente 11,7 s | Sí, en la simulación |
+
+Los resultados corresponden a simulaciones y no a una prueba de carga en producción. Los tiempos reales de servicio y el comportamiento del índice bajo escritura simultánea quedan pendientes de medición.
+
+### Decisiones arquitectónicas (ADR)
+
+- [ADR-001: Monolito modular con ETA incremental](docs/adr/ADR-001.md)
+- [ADR-005: Patrones de diseño adoptados y rechazados](docs/adr/ADR-005.md)
+- [ADR-006: Histórico por lotes y PostgreSQL sin Redis](docs/adr/ADR-006.md)
+- [ADR-007: Índice para consultas de ETA y caché del proxy](docs/adr/ADR-007.md)
+- [ADR-008: Priorizar la posición más reciente después de una caída](docs/adr/ADR-008.md)
+
+### Fitness functions
+
+Las pruebas de arquitectura y calidad se ejecutan mediante GitHub Actions en cada Pull Request y en cada push.
+
+[Ver ejecuciones del workflow](https://github.com/Camila-Alarico/cs-2026b-lab04--grupo06/tree/main/.github/workflows)
+
+Las fitness functions verifican los límites entre módulos y los escenarios de rendimiento, consulta, recuperación y disponibilidad definidos para RutaSIT.
+
+
 
 ## Reflexión sobre el uso de la IA
 La IA es una herramienta muy útil al momento de hacer diversas actividades, siendo una de esas el crear alternativas y escoger las mejores, lo que pasa es que no podemos depender completamente de estas ya que estas suelen contener errores al momento de crear. Un ejemplo de esta ayuda fue en la creacion de este laboratorio donde se uso Claude y ChatGPT los cuales ayudaron a generar tres alternativas de estilo, a criticarlas y a redactar el código de los diagramas. Claude afirmó que su alternativa era la única que atacaba el atributo crítico y planteó una mitigación incoherente (reconstruir el estado desde PostgreSQL sin haber persistido antes los datos) cosa que era un error en lo que se buscaba; ambas lo reconocieron al criticarse a sí mismas. ChatGPT recomendó WebSocket sin considerar que la carga depende de los pasajeros conectados y no de los 300 buses. Al final siempre se necesita que una persona verifique lo que te manda para tener una mejor coherencia y un buen trabajo.
