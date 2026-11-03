@@ -8,7 +8,7 @@
 | 4 | 02/10 | ChatGPT | Prompt 2: crítica adversarial a la alternativa 2 | 5 riesgos: WebSocket como cuello de botella, servidor único, cortes de red, ETA más complejo de lo previsto, complejidad operativa. Señaló que se puede cumplir el p95 y dar un ETA obsoleto. | Se acepta separar latencia de frescura: guardar timestamp GPS y de recepción, y marcar "dato desactualizado". La propia IA recomendó empezar con polling. | Aceptada |
 | 5 | 03/10 | Claude | Generar el Mermaid de la alternativa B a partir de matriz-decision.md | Diagrama con 3 actores, 4 módulos, capa de presentación e infraestructura, PostgreSQL y proveedor de mapas | Se validó en mermaid.live y GitHub; se comprobó que cada módulo cubre RF-01 a RF-06 y que ETA y Alertas dependen de Ubicaciones y Rutas solo por interfaz pública | Aceptada |
 | 6 | 01/11 | Claude | E1: escenarios de calidad de seis partes con (importancia, dificultad) para el crecimiento de RutaSIT a 1200 buses y 50 000 consultas | 7 escenarios (4 atributos) y calificaciones; QA-02 propuesto como (H,M) | Se contrastó QA-02 con la prueba existente de ETA desactualizado: se corrigió a (H,L). Se recalcularon las cifras de carga (120 msg/s y 13,9 consultas/s) | Corregida |
-
+| 7 | 02/11 | Claude | E2: iteración 1 de ADD para QA-01 con 1200 buses; tácticas candidatas y simulación con evidencia antes/después | 5 conceptos (microservicios + Kafka, Redis, histórico por lotes, 8 workers, control), simulación M/G/c y medición de CPU del código del Lab 07 | Se ejecutó la simulación con 5 semillas y se midió la CPU real; los supuestos de tiempo de servicio no están medidos. Se rechazaron Redis y microservicios | Aceptada |
 ## Anexo: prompts
 
 ### Prompt 1 (usado en Claude y en ChatGPT)
