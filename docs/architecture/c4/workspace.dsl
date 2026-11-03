@@ -3,21 +3,21 @@ workspace "RutaSIT Arequipa" "Modelo C4 del seguimiento en tiempo real de los bu
     !identifiers hierarchical
 
     model {
-        pasajero = person "Pasajero" "Consulta dónde está su bus y cuándo llegará a su paradero."
-        operador = person "Operador" "Gestiona rutas y paraderos y atiende las alertas de desvío."
+        pasajero = person "Pasajero" "Consulta dónde está su bus y cuándo llegará a su paradero. [QA-04]"
+        operador = person "Operador" "Gestiona rutas y paraderos y atiende las alertas de desvío. [QA-03]"
 
-        rutasit = softwareSystem "RutaSIT Arequipa" "Muestra en un mapa la ubicación de los buses y estima su tiempo de llegada a cada paradero." {
-            pwa = container "Aplicación web progresiva" "Interfaz para pasajeros y operadores: mapa, ETA y alertas." "PWA (HTML y JavaScript)" "Web Browser"
-            api = container "API RutaSIT" "Monolito modular que recibe las posiciones GPS, calcula el ETA y detecta desvíos." "Python / Django" {
-                ubicaciones = component "Módulo Ubicaciones" "Recibe y guarda las posiciones GPS y mantiene el estado de cada viaje." "Django app"
-                rutas = component "Módulo Rutas y paraderos" "Gestiona las rutas, los paraderos y su orden." "Django app"
-                eta = component "Módulo ETA" "Calcula y sirve el tiempo estimado de llegada; marca el dato desactualizado." "Django app"
-                alertas = component "Módulo Alertas" "Detecta desvíos y detenciones de los viajes y registra las alertas." "Django app"
+        rutasit = softwareSystem "RutaSIT Arequipa" "Muestra en un mapa la ubicación de los buses y estima su tiempo de llegada a cada paradero. Atiende [QA-01, QA-02, QA-04, QA-05, QA-06]." {
+            pwa = container "Aplicación web progresiva" "Interfaz para pasajeros y operadores: mapa, ETA y alertas; muestra «actualizado hace X s». [QA-04, QA-02]" "PWA (HTML y JavaScript)" "Web Browser"
+            api = container "API RutaSIT" "Monolito modular que recibe las posiciones GPS con token por bus, calcula el ETA y detecta desvíos; tras una caída prioriza la posición más reciente de cada bus. [QA-01, QA-05, QA-06]" "Python / Django" {
+                ubicaciones = component "Módulo Ubicaciones" "Recibe y guarda las posiciones GPS y mantiene el estado de cada viaje; escribe el histórico por lotes y tiene un adaptador por operador de GPS. [QA-01, QA-02, QA-05, QA-07]" "Django app"
+                rutas = component "Módulo Rutas y paraderos" "Gestiona las rutas, los paraderos y su orden. [QA-03]" "Django app"
+                eta = component "Módulo ETA" "Calcula y sirve el tiempo estimado de llegada con un algoritmo intercambiable; marca el dato desactualizado. [QA-01, QA-02, QA-03, QA-04]" "Django app"
+                alertas = component "Módulo Alertas" "Detecta desvíos y detenciones de los viajes y registra las alertas. [RF-05]" "Django app"
             }
-            db = container "Base de datos" "Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo)." "PostgreSQL + PostGIS" "Database"
+            db = container "Base de datos" "Rutas, paraderos, viajes, última posición e histórico, ETA y alertas (un esquema por módulo); índice del ETA por paradero. [QA-01, QA-04]" "PostgreSQL + PostGIS" "Database"
         }
 
-        gps = softwareSystem "Dispositivos GPS de los buses" "Sistema externo: rastreadores de los 300 buses que reportan su posición." "Externo"
+        gps = softwareSystem "Dispositivos GPS de los buses" "Sistema externo: rastreadores de los 1200 buses que reportan su posición cada 10 s y, según el supuesto de la iteración 3, reenvían las posiciones acumuladas al reconectarse. [QA-01, QA-05, QA-06]" "Externo"
         mapas = softwareSystem "Proveedor de mapas" "Sistema externo: provee los mosaicos del mapa de Arequipa." "Externo"
 
         pasajero -> rutasit "Consulta la ubicación de los buses y el ETA a su paradero"
@@ -51,14 +51,14 @@ workspace "RutaSIT Arequipa" "Modelo C4 del seguimiento en tiempo real de los bu
             deploymentNode "Celular o PC del usuario" "Dispositivo del pasajero o del operador" "Android / navegador web" {
                 containerInstance rutasit.pwa
             }
-            deploymentNode "Bus" "Equipo GPS a bordo de cada bus" "Equipo a bordo" {
+            deploymentNode "Bus" "Equipo GPS a bordo de cada bus. [QA-06]" "Equipo a bordo" {
                 softwareSystemInstance gps
             }
-            deploymentNode "Servidor en la nube (VPS)" "Un solo servidor de bajo costo que aloja la API y la base de datos. El proxy inverso Nginx y el monitoreo no se dibujan en esta vista (ver despliegue.puml del Lab 04)." "Linux (VPS de bajo costo)" {
-                deploymentNode "Servidor de aplicación" "Ejecuta el monolito modular" "Python / Django" {
+            deploymentNode "Servidor en la nube (VPS)" "Un solo servidor de bajo costo que aloja la API y la base de datos; es un punto único de falla aceptado para el MVP (riesgo R1). [QA-05] El proxy inverso Nginx y el monitoreo no se dibujan en esta vista (ver despliegue.puml del Lab 04)." "Linux (VPS de bajo costo)" {
+                deploymentNode "Servidor de aplicación" "Ejecuta el monolito modular. [QA-01, QA-04]" "Python / Django" {
                     containerInstance rutasit.api
                 }
-                deploymentNode "Servidor de base de datos" "Almacena los datos de todos los módulos" "PostgreSQL + PostGIS" {
+                deploymentNode "Servidor de base de datos" "Almacena los datos de todos los módulos. [QA-01, QA-04]" "PostgreSQL + PostGIS" {
                     containerInstance rutasit.db
                 }
             }
