@@ -1,0 +1,8 @@
+**Criterios de aceptación**
+
+1. Si mi bus se desvía de su ruta, recibo una notificación en mi dispositivo.
+2. La notificación indica la ruta afectada y el momento del desvío.
+3. Si el bus vuelve a su ruta, recibo una notificación indicando que el servicio se normalizó.
+4. No recibo notificaciones de rutas que no he marcado como favoritas.
+5. No recibo la misma alerta más de una vez por el mismo desvío.
+6. La notificación llega en menos de 1 minuto desde que se detecta el desvío.

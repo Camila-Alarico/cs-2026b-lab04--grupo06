@@ -1,0 +1,10 @@
+Esta historia es muy general y difícil de verificar tal como está escrita: "rápido" y "confiable" no son medibles y "hora punta" no está definida. Para poder escribir criterios de aceptación necesitaría definir umbrales concretos. Una propuesta de criterios medibles:
+
+**Rendimiento**
+- Dado que hay 1000 pasajeros consultando a la vez en hora punta, cuando consulto el tiempo de llegada, entonces recibo la respuesta en menos de 2 segundos en el 95 % de los casos.
+
+**Confiabilidad**
+- Dado que el sistema opera en hora punta (de 6:30 a 9:00 y de 17:00 a 20:00), cuando se mide la disponibilidad durante un mes, entonces es de al menos 99,5 %.
+- Dado que ocurre una falla de un componente, cuando un pasajero consulta la ubicación de un bus, entonces ve la última posición conocida con un aviso de que puede estar desactualizada.
+
+Antes de adoptarlos conviene confirmar con el Product Owner qué horario es la hora punta, cuántos usuarios simultáneos se esperan y qué nivel de disponibilidad es aceptable.

@@ -1,0 +1,34 @@
+description: "Tarea A: criterios de aceptación en Gherkin (RutaSIT Arequipa)"
+prompts:
+  - id: file://v1.txt
+    label: v1
+providers:
+  - id: file://../proveedor_grabado.py   # respuestas grabadas; reemplazable por un modelo real
+    label: asistente-grabado
+    config:
+      carpeta: criterios
+defaultTest:
+  assert:
+    # A1: contrato de salida (JSON válido que cumple el esquema)
+    - type: is-json
+      value: file://esquema.json
+      metric: A1_contrato_json
+    # A2: si la historia es válida, hay al menos un escenario de éxito y uno de error o borde
+    - type: javascript
+      metric: A2_exito_y_error
+      value: |
+        try {
+          const r = JSON.parse(output);
+          if (r.invest_ok === false) return true;
+          const tipos = (r.escenarios || []).map(e => e.tipo);
+          return tipos.includes('exito') && (tipos.includes('error') || tipos.includes('borde'));
+        } catch (e) { return false; }
+    # A3: los ESCENARIOS describen comportamiento, no implementación
+    - type: javascript
+      metric: A3_sin_implementacion
+      value: |
+        const prohibidas = ['postgresql', 'postgis', 'django', 'redis', 'endpoint', 'tabla', 'api rest', 'base de datos', 'sql'];
+        let texto = output.toLowerCase();
+        try { texto = JSON.stringify(JSON.parse(output).escenarios || []).toLowerCase(); } catch (e) {}
+        return !prohibidas.some(p => texto.includes(p));
+tests: file://casos.yaml

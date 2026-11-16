@@ -1,0 +1,16 @@
+## Criterios de aceptación
+
+**Escenario 1: Bus con posición reciente**
+- **Dado** que un bus reportó su posición hace menos de 30 segundos
+- **Cuando** lo veo en el mapa
+- **Entonces** aparece con el indicador normal y sin ningún aviso
+
+**Escenario 2: Bus con posición desactualizada**
+- **Dado** que un bus no reporta su posición hace más de 60 segundos
+- **Cuando** lo veo en el mapa
+- **Entonces** aparece en gris con la etiqueta "Posición desactualizada" y la hora de su último reporte
+
+**Escenario 3: Un bus desactualizado no afecta a los demás**
+- **Dado** que un bus tiene la posición desactualizada
+- **Cuando** consulto los demás buses de la ruta
+- **Entonces** los demás buses se muestran normalmente con su posición actual

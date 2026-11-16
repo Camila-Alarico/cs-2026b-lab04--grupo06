@@ -1,0 +1,18 @@
+## Criterios de aceptación
+
+**Historia:** Como pasajero, quiero ver en un mapa la ubicación de los buses de una ruta para decidir cuándo salir hacia el paradero.
+
+### Escenario 1: Ver los buses de una ruta
+- **Dado** que he seleccionado la ruta "Línea 1"
+- **Cuando** abro el mapa
+- **Entonces** veo un marcador por cada bus de esa ruta que está en circulación
+- **Y** cada marcador se muestra en la última posición reportada por el bus
+
+### Escenario 2: Ruta sin buses en circulación
+- **Dado** que seleccioné una ruta que no tiene buses en circulación
+- **Cuando** abro el mapa
+- **Entonces** veo el trazado de la ruta y el mensaje "No hay buses en circulación en esta ruta"
+
+### Criterios adicionales
+- El mapa debe cargar en menos de 3 segundos.
+- La posición de los buses se actualiza automáticamente sin recargar la página.

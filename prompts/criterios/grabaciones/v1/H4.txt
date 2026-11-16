@@ -1,0 +1,17 @@
+## Criterios de aceptación
+
+**Escenario 1: Detección de un desvío**
+- Dado que un bus está asignado a una ruta
+- Cuando su posición se aleja más de 100 metros del trazado de la ruta de forma sostenida
+- Entonces el sistema genera una alerta de desvío visible en el panel del operador
+- Y la alerta indica la placa del bus, la ruta y la hora
+
+**Escenario 2: Desvío menor dentro de la tolerancia**
+- Dado que un bus está asignado a una ruta
+- Cuando su posición se aleja menos de 100 metros del trazado
+- Entonces el sistema no genera ninguna alerta
+
+**Escenario 3: Atención de la alerta**
+- Dado que existe una alerta de desvío abierta
+- Cuando el operador la marca como atendida
+- Entonces la alerta desaparece de la lista de pendientes y queda registrada en el historial

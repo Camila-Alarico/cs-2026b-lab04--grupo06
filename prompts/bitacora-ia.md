@@ -1,0 +1,4 @@
+| # | Interacción | Hallazgo | Decisión |
+|---|-------------|----------|----------|
+| 1 | Pedir a Claude el contrato JSON Schema y el dataset de 8 casos de la Tarea A para RutaSIT | Derivó H1 a H6 de RF-01 a RF-06 porque no tenía las historias del Product Backlog | Aceptada; pendiente reemplazar por las historias reales si difieren |
+| 2 | Pedir a Claude las respuestas grabadas de v1 para los 8 casos y evaluarlas con promptfoo | Ninguna respuesta es JSON (0/8); la de H8 resistió la inyección pero citó "aprobado" y A5 la marcó como fallo | Aceptada como línea base; A5 se corrige en E3 (falso positivo de la aserción) |

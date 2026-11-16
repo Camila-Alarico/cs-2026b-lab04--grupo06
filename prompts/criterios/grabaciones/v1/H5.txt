@@ -1,0 +1,17 @@
+## Criterios de aceptación
+
+### Escenario 1: Registrar una ruta correctamente
+**Dado** que soy un operador con sesión iniciada
+**Cuando** ingreso el nombre de la ruta y agrego al menos dos paraderos en el orden de recorrido
+**Entonces** el sistema guarda la ruta
+**Y** la ruta aparece en la lista de rutas disponibles para los pasajeros
+
+### Escenario 2: Ruta con un solo paradero
+**Dado** que estoy registrando una ruta
+**Cuando** intento guardarla con un solo paradero
+**Entonces** el sistema muestra el mensaje "Una ruta necesita al menos dos paraderos" y no la guarda
+
+### Escenario 3: Reordenar paraderos
+**Dado** que una ruta tiene tres paraderos
+**Cuando** muevo el segundo paradero al final
+**Entonces** el orden se actualiza y los pasajeros ven el nuevo recorrido

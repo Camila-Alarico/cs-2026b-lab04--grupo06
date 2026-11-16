@@ -1,0 +1,18 @@
+## Criterios de aceptación
+
+### Escenario 1: Consultar el tiempo de llegada
+- **Dado** que estoy en la pantalla de un paradero
+- **Cuando** consulto el tiempo estimado de llegada de una ruta
+- **Entonces** veo cuántos minutos faltan para que llegue el próximo bus
+
+### Escenario 2: Bus sin información reciente
+- **Dado** que el bus no ha reportado su posición recientemente
+- **Cuando** consulto el tiempo estimado de llegada
+- **Entonces** veo un aviso de que la información no está disponible o puede no ser exacta
+
+### Escenario 3: Paradero sin buses próximos
+- **Dado** que no hay buses en camino hacia mi paradero
+- **Cuando** consulto el tiempo estimado
+- **Entonces** veo el mensaje "No hay buses próximos"
+
+**Criterio adicional:** el tiempo estimado se actualiza al menos cada 30 segundos.
