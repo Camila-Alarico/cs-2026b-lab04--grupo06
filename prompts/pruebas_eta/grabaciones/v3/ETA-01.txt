@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-01",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import DistanciaDirecta\nimport pytest\n\ndef test_distancia_directa_velocidad_normal():\n    eta = DistanciaDirecta().segundos(1000, 10)\n    assert eta == pytest.approx(360.0)\n    assert eta > 0\n    assert eta < 720.0\n",
+  "objetivo": "Debe probar el cálculo normal de distancia/velocidad y verificar el resultado en segundos."
+}

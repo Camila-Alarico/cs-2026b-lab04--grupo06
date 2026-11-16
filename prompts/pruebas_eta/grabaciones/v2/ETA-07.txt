@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-07",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import VelocidadPromedio\n\nresultado = VelocidadPromedio(40).segundos(1000, 5)\nassert resultado >= 0\nassert isinstance(resultado, float)\n",
+  "objetivo": "Comprobar que el resultado ETA sea numérico y no negativo."
+}

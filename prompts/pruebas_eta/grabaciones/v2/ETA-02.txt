@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-02",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import DistanciaDirecta\n\nresultado = DistanciaDirecta().segundos(1000, 0)\nassert resultado >= 0\nassert isinstance(resultado, float)\n",
+  "objetivo": "Comprobar que el resultado ETA sea numérico y no negativo."
+}

@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-06",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import VelocidadPromedio\nimport pytest\n\ndef test_velocidad_promedio_usa_valor_predeterminado():\n    estrategia = VelocidadPromedio()\n    eta = estrategia.segundos(1000, 5)\n    eta_otra_velocidad_actual = estrategia.segundos(1000, 50)\n    assert eta == pytest.approx(180.0)\n    assert eta_otra_velocidad_actual == pytest.approx(180.0)\n    assert eta > 0\n",
+  "objetivo": "Debe verificar el valor predeterminado de 20 km/h y que no se use la velocidad actual recibida."
+}

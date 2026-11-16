@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-07",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import VelocidadPromedio\nimport pytest\n\ndef test_velocidad_promedio_personalizada():\n    estrategia = VelocidadPromedio(40)\n    eta = estrategia.segundos(1000, 5)\n    eta_otra_velocidad = estrategia.segundos(1000, 80)\n    assert eta == pytest.approx(90.0)\n    assert eta_otra_velocidad == pytest.approx(90.0)\n    assert eta > 0\n",
+  "objetivo": "Debe verificar que se use la velocidad promedio configurada en el constructor."
+}

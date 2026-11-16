@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-03",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import DistanciaDirecta\nimport pytest\n\ndef test_distancia_directa_velocidad_menor_al_minimo():\n    estrategia = DistanciaDirecta()\n    eta_dos = estrategia.segundos(1000, 2)\n    eta_cero = estrategia.segundos(1000, 0)\n    assert eta_dos == pytest.approx(720.0)\n    assert eta_dos == eta_cero\n    assert eta_dos > 0\n",
+  "objetivo": "Debe verificar que una velocidad inferior a 5 km/h se sustituya por 5 km/h."
+}

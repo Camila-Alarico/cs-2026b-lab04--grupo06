@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pruebas pytest generadas para los algoritmos ETA de RutaSIT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "caso_id",
+    "archivo",
+    "codigo",
+    "objetivo"
+  ],
+  "properties": {
+    "caso_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "archivo": {
+      "type": "string",
+      "const": "test_eta_generado.py"
+    },
+    "codigo": {
+      "type": "string",
+      "minLength": 80
+    },
+    "objetivo": {
+      "type": "string",
+      "minLength": 10
+    }
+  }
+}

@@ -1,0 +1,4 @@
+Actúa como desarrollador Python con experiencia en pytest.
+Contexto: el repositorio RutaSIT tiene `src/rutasit/algoritmos_eta.py`, con las clases `DistanciaDirecta` y `VelocidadPromedio`, ambas con el método `segundos(distancia_m, velocidad_kmh)`.
+Tarea: genera pruebas pytest para el siguiente caso: {{requisito}}
+Usa las clases reales del módulo. Devuelve solo un objeto JSON con las claves `caso_id`, `archivo`, `codigo` y `objetivo`. En `codigo`, incluye código Python ejecutable.

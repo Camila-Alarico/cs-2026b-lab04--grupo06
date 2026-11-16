@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-02",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import DistanciaDirecta, VELOCIDAD_MINIMA_KMH\nimport pytest\n\ndef test_distancia_directa_velocidad_cero_usa_minimo():\n    estrategia = DistanciaDirecta()\n    eta = estrategia.segundos(1000, 0)\n    assert eta == pytest.approx(720.0)\n    assert VELOCIDAD_MINIMA_KMH == 5.0\n    assert eta > 0\n",
+  "objetivo": "Debe verificar que velocidad cero no cause división entre cero y que se aplique el mínimo de 5 km/h."
+}

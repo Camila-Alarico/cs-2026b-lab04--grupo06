@@ -86,13 +86,13 @@ stateDiagram-v2
 
 ## Decisiones arquitectónicas
 - [ADR-001: Estilo arquitectónico](docs/architecture/adr/001-estilo-arquitectonico.md)
-- [ADR-002: Polling vs WebSocket](docs/architecture/adr/002-polling-vs-websocket.md)
-- [ADR-003: Estado actual en PostgreSQL](docs/architecture/adr/003-estado-actual-postgresql.md)
+- [ADR-002: Polling vs WebSocket](docs/architecture/adr/002-decision.md)
+- [ADR-003: Estado actual en PostgreSQL](docs/architecture/adr/003-decision.md)
 
 
 ## Arquitectura C4 (Lab 06)
 
-Modelo C4 de RutaSIT Arequipa escrito como código con **Structurizr DSL**: un solo archivo, [workspace.dsl](docs/architecture/c4/workspace.dsl), del que se derivan las 5 vistas. Es coherente con el [ADR-001](docs/architecture/adr/001-estilo-arquitectonico.md) (monolito modular), con el [ADR-002](docs/architecture/adr/002-polling-vs-websocket.md) y el [ADR-003](docs/architecture/adr/003-estado-actual-postgresql.md) (Lab 04) y con el diagrama de paquetes y la secuencia del Lab 05.
+Modelo C4 de RutaSIT Arequipa escrito como código con **Structurizr DSL**: un solo archivo, [workspace.dsl](docs/architecture/c4/workspace.dsl), del que se derivan las 5 vistas. Es coherente con el [ADR-001](docs/architecture/adr/001-estilo-arquitectonico.md) (monolito modular), con el [ADR-002](docs/architecture/adr/002-decision.md) y el [ADR-003](docs/architecture/adr/003-decision.md) (Lab 04) y con el diagrama de paquetes y la secuencia del Lab 05.
 
 ### Contexto del sistema (nivel 1)
 
@@ -187,7 +187,7 @@ Ejecutar las pruebas desde la raíz del proyecto:
 pytest -v
 ```
 
-Los diagramas PlantUML se encuentran en `docs/design/`. La decisión arquitectónica se documenta en `docs/adr/ADR-005-patrones.md`.
+Los diagramas PlantUML se encuentran en `docs/design/`. La decisión arquitectónica se documenta en `docs/architecture/adr/005-patrones.md`.
 
 ## Diseño de la arquitectura (Lab 08)
 
@@ -214,11 +214,11 @@ Los resultados corresponden a simulaciones y no a una prueba de carga en producc
 
 ### Decisiones arquitectónicas (ADR)
 
-- [ADR-001: Monolito modular con ETA incremental](docs/adr/ADR-001.md)
-- [ADR-005: Patrones de diseño adoptados y rechazados](docs/adr/ADR-005.md)
-- [ADR-006: Histórico por lotes y PostgreSQL sin Redis](docs/adr/ADR-006.md)
-- [ADR-007: Índice para consultas de ETA y caché del proxy](docs/adr/ADR-007.md)
-- [ADR-008: Priorizar la posición más reciente después de una caída](docs/adr/ADR-008.md)
+- [ADR-001: Monolito modular con ETA incremental](docs/architecture/adr/001-estilo-arquitectonico.md)
+- [ADR-005: Patrones de diseño adoptados y rechazados](docs/architecture/adr/005-patrones.md)
+- [ADR-006: Histórico por lotes y PostgreSQL sin Redis](docs/architecture/adr/006-historico-porlotes.md)
+- [ADR-007: Índice para consultas de ETA y caché del proxy](docs/architecture/adr/007-indice-y-cache-de-consulta.md)
+- [ADR-008: Priorizar la posición más reciente después de una caída](docs/architecture/adr/008-prioridad-tras-reconexion.md)
 
 ### Fitness functions
 
@@ -232,3 +232,8 @@ Las fitness functions verifican los límites entre módulos y los escenarios de 
 
 ## Reflexión sobre el uso de la IA
 La IA es una herramienta muy útil al momento de hacer diversas actividades, siendo una de esas el crear alternativas y escoger las mejores, lo que pasa es que no podemos depender completamente de estas ya que estas suelen contener errores al momento de crear. Un ejemplo de esta ayuda fue en la creacion de este laboratorio donde se uso Claude y ChatGPT los cuales ayudaron a generar tres alternativas de estilo, a criticarlas y a redactar el código de los diagramas. Claude afirmó que su alternativa era la única que atacaba el atributo crítico y planteó una mitigación incoherente (reconstruir el estado desde PostgreSQL sin haber persistido antes los datos) cosa que era un error en lo que se buscaba; ambas lo reconocieron al criticarse a sí mismas. ChatGPT recomendó WebSocket sin considerar que la carga depende de los pasajeros conectados y no de los 300 buses. Al final siempre se necesita que una persona verifique lo que te manda para tener una mejor coherencia y un buen trabajo.
+
+
+### Laboratorio 09 — E4
+
+La tarea específica del caso RutaSIT Arequipa (generación de pruebas pytest para ETA) está en [`prompts/pruebas_eta/`](prompts/pruebas_eta/README.md). Incluye contrato JSON, dataset de ocho casos, versiones del prompt, aserciones y validación de las pruebas generadas.

@@ -1,0 +1,5 @@
+from rutasit.algoritmos_eta import DistanciaDirecta
+
+def test_eta():
+    resultado = DistanciaDirecta().segundos(1000, 5)
+    assert resultado >= 0

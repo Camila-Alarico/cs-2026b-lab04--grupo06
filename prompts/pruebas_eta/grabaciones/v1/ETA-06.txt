@@ -1,0 +1,5 @@
+from rutasit.algoritmos_eta import VelocidadPromedio
+
+def test_eta():
+    resultado = VelocidadPromedio().segundos(1000, 5)
+    assert resultado >= 0

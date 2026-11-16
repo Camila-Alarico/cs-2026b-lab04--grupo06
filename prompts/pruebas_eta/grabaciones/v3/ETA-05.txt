@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-05",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import DistanciaDirecta\nimport pytest\n\ndef test_distancia_directa_velocidad_superior_al_minimo():\n    eta = DistanciaDirecta().segundos(1000, 36)\n    assert eta == pytest.approx(100.0)\n    assert eta < 720.0\n    assert eta > 0\n",
+  "objetivo": "Debe verificar que se use la velocidad actual cuando es mayor que el mínimo."
+}

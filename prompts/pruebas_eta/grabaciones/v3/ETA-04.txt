@@ -1,0 +1,6 @@
+{
+  "caso_id": "ETA-04",
+  "archivo": "test_eta_generado.py",
+  "codigo": "from rutasit.algoritmos_eta import DistanciaDirecta\nimport pytest\n\ndef test_distancia_directa_velocidad_exactamente_minima():\n    eta = DistanciaDirecta().segundos(1000, 5)\n    assert eta == pytest.approx(720.0)\n    assert eta >= 0\n    assert eta != 360.0\n",
+  "objetivo": "Debe verificar el límite exacto de 5 km/h."
+}
