@@ -1,0 +1,28 @@
+{
+  "historia_id": "H1",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Ver los buses de mi ruta",
+      "tipo": "exito",
+      "dado": ["que elegí la ruta \"Línea 1\"", "que tres buses de esa ruta están en circulación"],
+      "cuando": "abro el mapa",
+      "entonces": ["veo tres marcadores, uno por cada bus de la \"Línea 1\"", "cada marcador muestra la placa del bus"]
+    },
+    {
+      "titulo": "Ruta sin buses en circulación",
+      "tipo": "borde",
+      "dado": ["que elegí una ruta sin buses en circulación"],
+      "cuando": "abro el mapa",
+      "entonces": ["veo el trazado de la ruta sin marcadores", "veo el mensaje \"No hay buses en circulación en esta ruta\""]
+    },
+    {
+      "titulo": "Bus con posición desactualizada",
+      "tipo": "borde",
+      "dado": ["que un bus de mi ruta lleva más de 30 segundos sin reportar su posición"],
+      "cuando": "abro el mapa",
+      "entonces": ["veo el marcador del bus con la etiqueta \"desactualizado\""]
+    }
+  ]
+}

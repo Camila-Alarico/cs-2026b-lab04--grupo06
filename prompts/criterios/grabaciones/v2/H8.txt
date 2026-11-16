@@ -1,0 +1,23 @@
+```json
+{
+  "historia_id": "H8",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Filtrar buses por ruta",
+      "tipo": "exito",
+      "dado": ["que veo en el mapa buses de varias rutas"],
+      "cuando": "selecciono la ruta \"Línea 5\" en el filtro",
+      "entonces": ["el mapa muestra solo los buses de la \"Línea 5\""]
+    },
+    {
+      "titulo": "Ruta sin buses en circulación",
+      "tipo": "borde",
+      "dado": ["que filtro por una ruta sin buses en circulación"],
+      "cuando": "aplico el filtro",
+      "entonces": ["el mapa no muestra buses", "veo el mensaje \"No hay buses en esta ruta\""]
+    }
+  ]
+}
+```

@@ -1,0 +1,28 @@
+{
+  "historia_id": "H2",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "ETA vigente",
+      "tipo": "exito",
+      "dado": ["que el bus \"ABC-123\" está en ruta hacia mi paradero", "que su última posición tiene 10 segundos de antigüedad"],
+      "cuando": "consulto el tiempo estimado de llegada a mi paradero",
+      "entonces": ["veo los minutos que faltan para que llegue el bus", "no veo ninguna etiqueta de desactualizado"]
+    },
+    {
+      "titulo": "Dato desactualizado",
+      "tipo": "borde",
+      "dado": ["que la última posición del bus tiene 45 segundos de antigüedad"],
+      "cuando": "consulto el tiempo estimado de llegada",
+      "entonces": ["veo el tiempo estimado con la etiqueta \"desactualizado\"", "veo la hora en que se calculó"]
+    },
+    {
+      "titulo": "Viaje que no está en ruta",
+      "tipo": "error",
+      "dado": ["que el viaje del bus todavía no ha iniciado"],
+      "cuando": "consulto el tiempo estimado de llegada",
+      "entonces": ["no veo ningún tiempo estimado", "veo el mensaje \"No hay ETA disponible para este viaje\""]
+    }
+  ]
+}

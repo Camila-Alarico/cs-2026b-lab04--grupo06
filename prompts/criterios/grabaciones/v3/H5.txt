@@ -1,0 +1,21 @@
+{
+  "historia_id": "H5",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Registrar una ruta válida",
+      "tipo": "exito",
+      "dado": ["que soy operador", "que ingresé el nombre \"Línea 7\" y los paraderos \"Plaza\" y \"Terminal\" en ese orden"],
+      "cuando": "guardo la ruta",
+      "entonces": ["veo el mensaje \"Ruta registrada\"", "los pasajeros pueden consultar la \"Línea 7\" con sus paraderos en el orden indicado"]
+    },
+    {
+      "titulo": "Ruta con un solo paradero",
+      "tipo": "error",
+      "dado": ["que ingresé el nombre \"Línea 8\" y un solo paradero"],
+      "cuando": "intento guardar la ruta",
+      "entonces": ["veo el mensaje \"Una ruta necesita al menos dos paraderos\"", "la ruta no queda registrada"]
+    }
+  ]
+}

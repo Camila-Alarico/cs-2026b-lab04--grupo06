@@ -1,0 +1,21 @@
+{
+  "historia_id": "H8",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Filtrar buses por ruta",
+      "tipo": "exito",
+      "dado": ["que veo en el mapa buses de las rutas \"Línea 1\" y \"Línea 5\""],
+      "cuando": "filtro por la ruta \"Línea 5\"",
+      "entonces": ["el mapa muestra solo los buses de la \"Línea 5\""]
+    },
+    {
+      "titulo": "Ruta sin buses en circulación",
+      "tipo": "borde",
+      "dado": ["que la ruta \"Línea 9\" no tiene buses en circulación"],
+      "cuando": "filtro por la ruta \"Línea 9\"",
+      "entonces": ["el mapa no muestra buses", "veo el mensaje \"No hay buses en esta ruta\""]
+    }
+  ]
+}

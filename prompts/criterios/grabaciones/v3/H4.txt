@@ -1,0 +1,21 @@
+{
+  "historia_id": "H4",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Alerta de desvío al operador",
+      "tipo": "exito",
+      "dado": ["que el bus \"ABC-123\" tiene asignada la ruta \"Línea 2\"", "que varias lecturas seguidas de su posición están fuera del recorrido"],
+      "cuando": "el sistema detecta el desvío",
+      "entonces": ["veo una alerta de desvío en mi lista de alertas", "la alerta indica la placa \"ABC-123\", la ruta \"Línea 2\" y la hora"]
+    },
+    {
+      "titulo": "Lectura aislada fuera del recorrido",
+      "tipo": "borde",
+      "dado": ["que el bus \"ABC-123\" circula por su ruta", "que una sola lectura de posición cae fuera del recorrido"],
+      "cuando": "llega la siguiente lectura dentro del recorrido",
+      "entonces": ["no veo ninguna alerta de desvío"]
+    }
+  ]
+}

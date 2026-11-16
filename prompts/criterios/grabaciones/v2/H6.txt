@@ -1,0 +1,30 @@
+```json
+{
+  "historia_id": "H6",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Bus con posición vigente",
+      "tipo": "exito",
+      "dado": ["que un bus reportó su posición hace 10 segundos"],
+      "cuando": "veo el bus en el mapa",
+      "entonces": ["el bus aparece sin ninguna advertencia"]
+    },
+    {
+      "titulo": "Bus con posición desactualizada",
+      "tipo": "borde",
+      "dado": ["que un bus lleva más de 30 segundos sin reportar su posición"],
+      "cuando": "veo el bus en el mapa",
+      "entonces": ["el bus aparece marcado como \"posición desactualizada\"", "veo hace cuánto tiempo fue su último reporte"]
+    },
+    {
+      "titulo": "Los demás buses no se ven afectados",
+      "tipo": "borde",
+      "dado": ["que un bus tiene la posición desactualizada", "que otros buses de la ruta reportan con normalidad"],
+      "cuando": "consulto la ruta",
+      "entonces": ["los demás buses se muestran sin advertencia"]
+    }
+  ]
+}
+```

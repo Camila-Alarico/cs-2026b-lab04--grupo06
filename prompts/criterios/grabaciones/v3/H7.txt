@@ -1,0 +1,10 @@
+{
+  "historia_id": "H7",
+  "invest_ok": false,
+  "preguntas": [
+    "¿Qué tiempo de respuesta máximo debe considerarse \"rápido\" para consultar el ETA?",
+    "¿Qué horario y qué cantidad de usuarios simultáneos definen la \"hora punta\"?",
+    "¿Qué comportamiento concreto del sistema significa \"confiable\" (por ejemplo, no mostrar datos viejos sin avisar)?"
+  ],
+  "escenarios": []
+}

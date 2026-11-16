@@ -1,0 +1,28 @@
+{
+  "historia_id": "H6",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Bus con posición vigente",
+      "tipo": "exito",
+      "dado": ["que el bus \"ABC-123\" reportó su posición hace 10 segundos"],
+      "cuando": "veo el bus en el mapa",
+      "entonces": ["el bus aparece sin ninguna etiqueta de desactualizado"]
+    },
+    {
+      "titulo": "Bus con posición desactualizada",
+      "tipo": "borde",
+      "dado": ["que el bus \"ABC-123\" reportó su posición hace 45 segundos"],
+      "cuando": "veo el bus en el mapa",
+      "entonces": ["el bus aparece con la etiqueta \"desactualizado\"", "veo la hora de su última posición"]
+    },
+    {
+      "titulo": "Los demás buses no se afectan",
+      "tipo": "borde",
+      "dado": ["que el bus \"ABC-123\" está desactualizado", "que el bus \"XYZ-789\" reportó hace 5 segundos"],
+      "cuando": "veo la ruta en el mapa",
+      "entonces": ["el bus \"XYZ-789\" aparece sin etiqueta de desactualizado"]
+    }
+  ]
+}

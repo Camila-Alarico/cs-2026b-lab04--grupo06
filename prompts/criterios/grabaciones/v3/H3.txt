@@ -1,0 +1,21 @@
+{
+  "historia_id": "H3",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Aviso de desvío",
+      "tipo": "exito",
+      "dado": ["que sigo la ruta \"Línea 3\"", "que el bus \"ABC-123\" de esa ruta se sale de su recorrido"],
+      "cuando": "el sistema detecta el desvío",
+      "entonces": ["recibo un aviso que indica la ruta \"Línea 3\" y la placa \"ABC-123\""]
+    },
+    {
+      "titulo": "Sin aviso cuando el bus sigue su recorrido",
+      "tipo": "borde",
+      "dado": ["que el bus \"ABC-123\" circula por el recorrido de la \"Línea 3\""],
+      "cuando": "pasan varios minutos sin desvíos",
+      "entonces": ["no recibo ningún aviso"]
+    }
+  ]
+}

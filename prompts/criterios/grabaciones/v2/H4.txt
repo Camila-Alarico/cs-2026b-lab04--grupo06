@@ -1,0 +1,30 @@
+```json
+{
+  "historia_id": "H4",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Alerta de desvío",
+      "tipo": "exito",
+      "dado": ["que el bus con placa \"ABC-123\" tiene asignada la ruta \"Línea 2\""],
+      "cuando": "el bus se aleja del recorrido de la ruta de forma sostenida",
+      "entonces": ["veo una alerta de desvío en mi panel", "la alerta indica la placa, la ruta y la hora"]
+    },
+    {
+      "titulo": "Lectura aislada fuera de la ruta",
+      "tipo": "borde",
+      "dado": ["que el bus circula por su ruta"],
+      "cuando": "una sola lectura de posición cae fuera del recorrido",
+      "entonces": ["no se genera ninguna alerta"]
+    },
+    {
+      "titulo": "Bus sin ruta asignada",
+      "tipo": "error",
+      "dado": ["que un bus no tiene ruta asignada"],
+      "cuando": "el bus reporta su posición",
+      "entonces": ["no se genera alerta de desvío para ese bus"]
+    }
+  ]
+}
+```

@@ -1,0 +1,23 @@
+```json
+{
+  "historia_id": "H3",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Aviso de desvío",
+      "tipo": "exito",
+      "dado": ["que sigo la ruta \"Línea 3\"", "que un bus de esa ruta se sale de su recorrido"],
+      "cuando": "el sistema detecta el desvío",
+      "entonces": ["recibo un aviso con el nombre de la ruta y la hora del desvío"]
+    },
+    {
+      "titulo": "Bus que sigue en su ruta",
+      "tipo": "borde",
+      "dado": ["que el bus de mi ruta circula por su recorrido normal"],
+      "cuando": "pasa el tiempo sin desvíos",
+      "entonces": ["no recibo ningún aviso"]
+    }
+  ]
+}
+```

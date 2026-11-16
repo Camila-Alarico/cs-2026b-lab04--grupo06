@@ -1,0 +1,23 @@
+```json
+{
+  "historia_id": "H5",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Registrar una ruta válida",
+      "tipo": "exito",
+      "dado": ["que soy operador", "que ingresé el nombre \"Línea 7\" y dos paraderos en orden de recorrido"],
+      "cuando": "guardo la ruta",
+      "entonces": ["veo la confirmación \"Ruta registrada\"", "la ruta aparece en la lista de rutas consultables"]
+    },
+    {
+      "titulo": "Ruta con un solo paradero",
+      "tipo": "error",
+      "dado": ["que ingresé el nombre \"Línea 8\" y un solo paradero"],
+      "cuando": "intento guardar la ruta",
+      "entonces": ["veo el mensaje \"Una ruta necesita al menos dos paraderos\"", "la ruta no se guarda"]
+    }
+  ]
+}
+```

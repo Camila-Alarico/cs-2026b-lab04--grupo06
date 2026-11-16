@@ -1,0 +1,30 @@
+```json
+{
+  "historia_id": "H2",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Consultar el tiempo de llegada",
+      "tipo": "exito",
+      "dado": ["que estoy viendo mi paradero", "que un bus de la ruta viene en camino"],
+      "cuando": "consulto el tiempo estimado de llegada",
+      "entonces": ["veo cuántos minutos faltan para que llegue el bus"]
+    },
+    {
+      "titulo": "Bus sin posición reciente",
+      "tipo": "borde",
+      "dado": ["que el bus lleva más de 30 segundos sin reportar su posición"],
+      "cuando": "consulto el tiempo estimado de llegada",
+      "entonces": ["veo el tiempo con la etiqueta \"dato desactualizado\"", "veo la hora del último cálculo"]
+    },
+    {
+      "titulo": "Viaje que no está en ruta",
+      "tipo": "error",
+      "dado": ["que el viaje del bus aún no ha iniciado"],
+      "cuando": "consulto el tiempo estimado de llegada",
+      "entonces": ["no veo ningún tiempo estimado", "veo el mensaje \"No hay ETA disponible para este viaje\""]
+    }
+  ]
+}
+```

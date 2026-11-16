@@ -1,0 +1,23 @@
+```json
+{
+  "historia_id": "H1",
+  "invest_ok": true,
+  "preguntas": [],
+  "escenarios": [
+    {
+      "titulo": "Ver los buses de una ruta en el mapa",
+      "tipo": "exito",
+      "dado": ["que seleccioné la ruta \"Línea 1\"", "que hay buses de esa ruta en circulación"],
+      "cuando": "abro el mapa",
+      "entonces": ["veo un marcador por cada bus de la ruta", "cada marcador está en la última posición reportada por el bus"]
+    },
+    {
+      "titulo": "Ruta sin buses en circulación",
+      "tipo": "borde",
+      "dado": ["que seleccioné una ruta sin buses en circulación"],
+      "cuando": "abro el mapa",
+      "entonces": ["veo el trazado de la ruta sin marcadores", "veo el mensaje \"No hay buses en circulación en esta ruta\""]
+    }
+  ]
+}
+```
