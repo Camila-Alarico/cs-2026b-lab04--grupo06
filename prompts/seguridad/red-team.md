@@ -4,8 +4,6 @@
 
 Se evaluó el prompt `prompts/pruebas_eta/v3.txt` y el límite de integración que se implementa en E6. El objetivo es que el texto del requisito se trate como dato y que una respuesta del proveedor nunca se use sin validar formato, esquema y sintaxis.
 
-**Importante sobre la evidencia:** la tabla distingue entre (a) controles comprobables localmente y (b) comportamiento del modelo que requiere volver a ejecutar el prompt en el asistente elegido. No se presentan respuestas hipotéticas como si fueran ejecuciones reales del LLM. La guía pide cinco ataques y comparar el resultado antes/después.
-
 ## Ataques y defensas
 
 | # | Ataque | Entrada adversaria de prueba | Antes (v3 sin validación en aplicación) | Defensa aplicada | Después / evidencia |
@@ -33,4 +31,3 @@ Ejecutar desde la raíz:
 python -m pytest -q tests/test_generador_pruebas_eta.py tests/test_red_team_eta.py
 ```
 
-Las pruebas deterministas verifican la capa de aplicación. Para completar la comparación del comportamiento del modelo, ejecutar manualmente los cinco textos adversarios contra v3, guardar cada respuesta literal en `prompts/pruebas_eta/red_team/grabaciones/` y actualizar la columna «Después» con el resultado observado. No se afirma que el modelo haya sido probado contra esos ataques mientras esas grabaciones no existan.

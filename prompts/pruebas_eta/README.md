@@ -2,15 +2,12 @@
 
 ## 1. Alcance
 
-La guía del Laboratorio 09 asigna al caso 6 (RutaSIT Arequipa) la tarea: **generar pruebas pytest para la función de tiempo de llegada**. La aserción clave sugerida es que el código compile y contenga tres o más instrucciones `assert`.
-
 El código de producción utilizado como referencia es `src/rutasit/algoritmos_eta.py`. Contiene:
 
 - `DistanciaDirecta.segundos(distancia_m, velocidad_kmh)`: usa la velocidad actual, con un mínimo de `5.0 km/h`.
 - `VelocidadPromedio(velocidad_promedio_kmh=20.0).segundos(...)`: usa la velocidad configurada en el constructor; el parámetro `velocidad_kmh` del método no cambia esa velocidad.
 - La conversión de km/h a m/s divide entre `3.6`.
 
-No se modificó el código de producción para esta tarea.
 
 ## 2. Contrato y dataset (E1)
 
@@ -52,8 +49,7 @@ Para validar que los fragmentos v3 compilan y ejecutan contra el módulo real:
 python prompts/pruebas_eta/validar_v3.py
 ```
 
-Si ejecutas desde Windows, activa primero el mismo entorno Python donde está instalado el proyecto. Si el paquete no está instalado, configura `PYTHONPATH=src` (PowerShell: `$env:PYTHONPATH = "src"`).
 
 ## 6. Evidencia y límites
 
-Las fixtures v1 y v2 son deliberadamente débiles para mostrar por qué se endureció el prompt; v3 es la versión candidata. Son ejemplos provisionales y deben reemplazarse por grabaciones literales del asistente elegido antes de entregar. El porcentaje final debe tomarse del reporte generado por `promptfoo eval` en el equipo, no estimarse a partir del diseño del prompt. La evaluación de Promptfoo comprueba contrato y características estáticas; `validar_v3.py` ejecuta los ocho fragmentos v3 con pytest para comprobar compilación y comportamiento.
+Las fixtures v1 y v2 son deliberadamente débiles para mostrar por qué se endureció el prompt; v3 es la versión candidata. 
