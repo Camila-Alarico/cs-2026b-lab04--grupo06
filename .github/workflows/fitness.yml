@@ -1,13 +1,23 @@
 name: fitness-functions
 on: [pull_request, push]
+
 jobs:
   arquitectura:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: pip install import-linter pytest matplotlib
-      - run: lint-imports           # FF-01 a FF-03
-        env: { PYTHONPATH: src }
-      - run: python -m pytest -v tests   # incluye FF-04 a FF-07
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install import-linter pytest matplotlib jsonschema pyyaml
+      - name: Ejecutar Fitness Functions arquitectónicas (FF-01 a FF-03)
+        run: lint-imports
+        env:
+          PYTHONPATH: src
+      - name: Ejecutar suite de pruebas (incluye FF-04 a FF-07)
+        run: python -m pytest -v tests
+        env:
+          PYTHONPATH: src

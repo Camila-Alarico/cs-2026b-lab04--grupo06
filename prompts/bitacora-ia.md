@@ -20,11 +20,3 @@ La guía exige ejecutar la mejor versión sobre los mismos tres casos, tres vece
 | ETA-01 | Pendiente de ejecución real | Pendiente de ejecución real | Pendiente de ejecución real | Pendiente |
 | ETA-02 | Pendiente de ejecución real | Pendiente de ejecución real | Pendiente de ejecución real | Pendiente |
 | ETA-08 (adversario) | Pendiente de ejecución real | Pendiente de ejecución real | Pendiente de ejecución real | Pendiente |
-
-### Análisis que debe completarse después de las nueve ejecuciones
-
-1. Comparar si cambia la estructura JSON, los imports, el número de pruebas y los valores esperados.
-2. Identificar si alguna variación rompe el esquema o el contrato de pytest.
-3. Volver a ejecutar las pruebas locales con cada salida literal, sin editar las grabaciones.
-4. Conservar las nueve respuestas originales y registrar modelo, fecha y configuración.
-5. Si una salida cambia entre ejecuciones, mantener validación determinista en la aplicación y no asumir que un prompt produce siempre el mismo resultado.

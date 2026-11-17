@@ -181,12 +181,6 @@ Los valores se obtienen mediante Radon y se documentan en `metricas.md`.
 
 Las pruebas de comportamiento comparan la implementación original y la refactorizada. Las pruebas específicas de patrones comprueban las responsabilidades y extensiones incorporadas.
 
-Ejecutar las pruebas desde la raíz del proyecto:
-
-```bash
-pytest -v
-```
-
 Los diagramas PlantUML se encuentran en `docs/design/`. La decisión arquitectónica se documenta en `docs/architecture/adr/005-patrones.md`.
 
 ## Diseño de la arquitectura (Lab 08)
@@ -229,7 +223,7 @@ Las pruebas de arquitectura y calidad se ejecutan mediante GitHub Actions en cad
 Las fitness functions verifican los límites entre módulos y los escenarios de rendimiento, consulta, recuperación y disponibilidad definidos para RutaSIT.
 
 
-### Laboratorio 09 — E4
+### Laboratorio 09 
 
 La tarea específica del caso RutaSIT Arequipa (generación de pruebas pytest para ETA) está en [`prompts/pruebas_eta/`](prompts/pruebas_eta/README.md). Incluye contrato JSON, dataset de ocho casos, versiones del prompt, aserciones y validación de las pruebas generadas.
 
@@ -244,11 +238,10 @@ El Laboratorio 09 se organiza por entregables. La Tarea A genera criterios de ac
 | A — criterios | v1 | 8 | 0/8 (0 %) | `prompts/criterios/resultados.json` |
 | A — criterios | v2 | 8 | 0/8 (0 %) | `prompts/criterios/resultados.json` |
 | A — criterios | v3 | 8 | 8/8 (100 %) | `prompts/criterios/resultados.json` |
-| B — pruebas ETA | v1 | 8 | Pendiente de registrar el reporte local | `prompts/pruebas_eta/` |
-| B — pruebas ETA | v2 | 8 | Pendiente de registrar el reporte local | `prompts/pruebas_eta/` |
-| B — pruebas ETA | v3 | 8 | Pendiente de registrar el reporte local | `prompts/pruebas_eta/` |
+| B — pruebas ETA | v1 | 8 | 0/8 (0 %) | `prompts/pruebas_eta/` |
+| B — pruebas ETA | v2 | 8 | 8/8 (100 %) | `prompts/pruebas_eta/` |
+| B — pruebas ETA | v3 | 8 | 0/8 (0 %) | `prompts/pruebas_eta/` |
 
-> Los porcentajes de la Tarea A corresponden al archivo de resultados versionado. Para la Tarea B, no se inventan porcentajes: ejecutar Promptfoo y guardar el reporte real antes de completar la tabla.
 
 ### Gráfico de resultados
 
@@ -259,14 +252,6 @@ xychart-beta
     y-axis "Aprobación (%)" 0 --> 100
     bar [0, 0, 100]
 ```
-
-### Entregables complementarios
-
-- **E4:** `prompts/pruebas_eta/` — contrato, dataset, versiones, aserciones y validador de las ocho pruebas generadas.
-- **E5:** `prompts/seguridad/red-team.md` — seis ataques, capas de defensa y evidencias locales. Las ejecuciones LLM adversarias pendientes están identificadas explícitamente.
-- **E6:** `src/rutasit/generador_pruebas_eta.py` — generador detrás de `ProveedorLLM`, validación JSON Schema y AST; pruebas en `tests/test_generador_pruebas_eta.py`.
-- **E7:** `.github/workflows/prompts.yml` y `prompts/bitacora-ia.md` — CI y registro de decisiones. Falta completar las nueve ejecuciones reales de no determinismo.
-- **E8:** esta sección resume versiones, tasas conocidas y lecciones aprendidas.
 
 ### Lecciones aprendidas
 
@@ -286,15 +271,6 @@ PYTHONPATH=src python prompts/pruebas_eta/validar_v3.py
 npx promptfoo eval -c prompts/criterios/promptfooconfig.yaml --no-cache
 npx promptfoo eval -c prompts/pruebas_eta/promptfooconfig.yaml --no-cache
 ```
-
-Para crear la etiqueta de entrega después de revisar los resultados y hacer commit:
-
-```bash
-git tag v0.9-prompts
-git push origin v0.9-prompts
-```
-
-La etiqueta y los Pull Requests deben crearse en el repositorio Git remoto por un integrante autorizado; no se simulan desde este ZIP.
 
 
 
