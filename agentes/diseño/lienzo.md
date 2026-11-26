@@ -1,0 +1,11 @@
+# Lienzo de diseño del sistema agéntico — RutaSIT Arequipa
+
+| Decisión | Elección | Justificación |
+|---|---|---|
+| ¿Agente o flujo de trabajo? | Agente para corregir issues; flujo fijo para el resto | Para corregir un bug hay que explorar el código y los pasos no se conocen de antemano. En cambio, calcular ETA, publicar eventos y explicar retrasos (Lab 07) tienen pasos fijos y deterministas: un agente solo agregaría costo y riesgo. Los issues 1 y 3 son tan acotados que un desarrollador los arreglaría más rápido; el agente se justifica sobre todo en el issue 2 y como ejercicio. |
+| Arquetipo | Planificador-ejecutor + ReAct | El plan corto deja claro qué se va a tocar. La ejecución es exploratoria (leer, buscar, probar, editar) y el bucle ReAct permite corregir el rumbo con cada observación. |
+| Herramientas | listar_archivos, leer_archivo, buscar, editar_archivo, ejecutar_pruebas, ver_cambios, ejecutar_comando (solo pytest, radon cc, git status/diff) | Es lo mínimo para leer, cambiar y verificar. No hay red, ni borrado, ni git commit/push: el agente propone y el humano integra. |
+| Memoria | Historial de la tarea (corto plazo); en E4 se suma una memoria de notas (notas.md) | Cada issue es una tarea corta que no necesita recordar ejecuciones previas. Las notas se agregan para registrar hipótesis y archivos ya revisados. |
+| Coordinación | Gestor (planificador) + actor-crítico (ejecutor y revisor de solo lectura), máx. 2 rondas | Quien cambia el código no debe ser quien lo aprueba. En E5 se compara con un agente único para decidir si el costo extra compensa. |
+| Rol humano | Revisor: un integrante del grupo aprueba cada edición y el Pull Request | Primer uso del sistema, confianza baja. El agente trabaja en la rama lab10-agentes y nunca fusiona su propio cambio. |
+| Control | Contrato JSON por decisión, política por rol, máx. 12 pasos (ejecutor) y 8 (revisor), máx. 2 rondas, tests/ protegido, sandbox en una copia del repo | Evita acciones indebidas, bucles y costos sin límite. Proteger tests/ impide que el agente "arregle" las pruebas para que pasen. |
