@@ -6,6 +6,7 @@ state FINALIZADO #C8E6C9
 state LIMITE_ALCANZADO #FFCDD2
 state CONTRATO_INVALIDO #FFE0B2
 state BLOQUEADO #FFE0B2
+state ESPERANDO_APROBACION #FFF9C4
 
 [*] --> INICIO
 INICIO --> DECIDIENDO : objetivo
@@ -16,7 +17,10 @@ VALIDANDO_CONTRATO --> FINALIZADO : "final" válido
 CONTRATO_INVALIDO --> DECIDIENDO : el error vuelve como observación
 CONTRATO_INVALIDO --> LIMITE_ALCANZADO : no quedan pasos
 EVALUANDO_POLITICA --> EJECUTANDO : permitida
+EVALUANDO_POLITICA --> ESPERANDO_APROBACION : edición con aprobación humana activa
 EVALUANDO_POLITICA --> BLOQUEADO : la política la rechaza
+ESPERANDO_APROBACION --> EJECUTANDO : el humano responde s
+ESPERANDO_APROBACION --> BLOQUEADO : el humano responde n
 EVALUANDO_POLITICA --> LIMITE_ALCANZADO : paso > max_pasos
 BLOQUEADO --> DECIDIENDO : el bloqueo vuelve como observación
 EJECUTANDO --> OBSERVANDO : resultado o error

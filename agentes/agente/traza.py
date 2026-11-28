@@ -40,10 +40,15 @@ def a_mermaid(eventos: list[dict]) -> str:
         if estado == "INICIO":
             lineas.append("    U->>A: objetivo")
         elif estado == "OBSERVANDO":
+            if e.get("humano"):
+                lineas += [f"    A->>U: {_limpio(_llamada(e), 60)}", "    U-->>A: edición aprobada"]
             lineas += [f"    A->>H: {_limpio(_llamada(e), 60)}", f"    H-->>A: {_limpio(_observacion(e))}"]
         elif estado in ESTADOS_BLOQUEO:
             accion = "límite de pasos" if e["accion"] == "(ninguna)" else _limpio(_llamada(e), 60)
-            lineas += [f"    A-xP: {accion}", f"    P-->>A: {estado}"]
+            if e.get("humano"):
+                lineas += [f"    A->>U: {_limpio(_llamada(e), 60)}", "    U--xA: edición rechazada"]
+            else:
+                lineas += [f"    A-xP: {accion}", f"    P-->>A: {estado}"]
         elif estado == "CONTRATO_INVALIDO":
             lineas += ["    A-xA: decisión inválida", f"    Note over A: {_limpio(e['observacion'], 70)}"]
         elif estado == "FINALIZADO":
@@ -58,6 +63,8 @@ def resumen(eventos: list[dict]) -> dict:
             "acciones_permitidas": sum(1 for e in acciones if e["estado"] == "OBSERVANDO"),
             "bloqueadas_por_politica": sum(1 for e in acciones if e["estado"] in ESTADOS_BLOQUEO),
             "rechazadas_por_contrato": sum(1 for e in acciones if e["estado"] == "CONTRATO_INVALIDO"),
+            "ediciones_aprobadas_por_humano": sum(1 for e in acciones if e.get("humano") == "aprobada"),
+            "ediciones_rechazadas_por_humano": sum(1 for e in acciones if e.get("humano") == "rechazada"),
             "herramientas": sorted({e["accion"] for e in acciones if e["estado"] == "OBSERVANDO"}),
             "contexto_final_chars": max(e["contexto_chars"] for e in eventos),
             "termino_con": eventos[-1]["estado"]}

@@ -52,11 +52,6 @@ def test_politica_limite_de_pasos_y_herramienta_no_permitida():
     assert not p.evaluar("borrar_todo", {}, 1).permitido
 
 
-def test_politica_humano_en_el_circuito_puede_rechazar_una_edicion():
-    p = Politica(aprobar_edicion=lambda args: False)
-    assert not p.evaluar("editar_archivo", {"ruta": "src/a.py"}, 1).permitido
-
-
 def test_sandbox_rechaza_rutas_fuera_de_la_copia(tmp_path):
     h = Herramientas(tmp_path)
     with pytest.raises(PermissionError):

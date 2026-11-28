@@ -146,6 +146,13 @@ class Herramientas:
         archivo = self.raiz / NOTAS
         return archivo.read_text(encoding="utf-8").splitlines() if archivo.exists() else []
 
+    def pruebas_pasan(self, args: str = "") -> tuple[bool, str]:
+        """Compuerta determinista (la usa el orquestador, no el modelo): ¿pytest termina sin fallos?"""
+        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider",
+                            *shlex.split(args)], cwd=self.raiz, capture_output=True, text=True, timeout=60,
+                           env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+        return r.returncode == 0, _cola((r.stdout + r.stderr).strip())
+
     def archivos_modificados(self) -> list[str]:
         if self.original is None:
             return []

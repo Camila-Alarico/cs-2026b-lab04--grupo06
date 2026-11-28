@@ -11,6 +11,7 @@ import pathlib
 import shutil
 
 from agente_unico import AQUI, COPIA, RAIZ, confirmar, objetivo_issue, preparar_copia
+from agente.aprobacion import aprobar_por_consola
 from agente.herramientas import Herramientas
 from agente.modelo import ModeloGrabado, ModeloInteractivo
 from agente.nucleo import Agente
@@ -21,9 +22,10 @@ MAX_RONDAS = 2
 LECTURA = {"ver_cambios", "leer_archivo", "buscar", "mapa_repo", "ejecutar_pruebas"}  # el revisor no edita
 
 
-def orquestar(n, h, crear_modelo, trazas, max_rondas=MAX_RONDAS) -> dict:
+def orquestar(n, h, crear_modelo, trazas, max_rondas=MAX_RONDAS, aprobar_edicion=None) -> dict:
     """crear_modelo(rol, ronda) devuelve el Modelo de cada agente. El estado final es APROBADO,
-    CAMBIOS_PENDIENTES (se agotaron las rondas) o SIN_VEREDICTO (el revisor no respondió el formato)."""
+    CAMBIOS_PENDIENTES (se agotaron las rondas) o SIN_VEREDICTO (el revisor no respondió el formato).
+    Un APROBADO del revisor solo vale si la prueba del issue pasa (compuerta determinista)."""
     n = f"{n:02d}"
     issue = h.leer_archivo(f"issues/ISSUE-{n}.md")
 
@@ -39,7 +41,7 @@ def orquestar(n, h, crear_modelo, trazas, max_rondas=MAX_RONDAS) -> dict:
     plan = gestor.ejecutar()
     agentes, rondas, retro, estado = [gestor], [], "", "SIN_VEREDICTO"
     for ronda in range(1, max_rondas + 1):
-        ejecutor = Agente("ejecutor", crear_modelo("ejecutor", ronda), h, Politica(max_pasos=12),
+        ejecutor = Agente("ejecutor", crear_modelo("ejecutor", ronda), h, Politica(max_pasos=12, aprobar_edicion=aprobar_edicion),
                           f"{objetivo_issue(n)}\n\nPLAN DEL GESTOR:\n{plan}\n{retro}", traza("ejecutor", ronda))
         resumen_ejecutor = ejecutor.ejecutar()
         revisor = Agente("revisor", crear_modelo("revisor", ronda), h,
@@ -52,8 +54,16 @@ def orquestar(n, h, crear_modelo, trazas, max_rondas=MAX_RONDAS) -> dict:
                          traza("revisor", ronda))
         veredicto = revisor.ejecutar()
         agentes += [ejecutor, revisor]
-        rondas.append({"ronda": ronda, "ejecutor": resumen_ejecutor, "veredicto": veredicto})
+        rondas.append({"ronda": ronda, "ejecutor": resumen_ejecutor, "veredicto": veredicto,
+                       "aprobado_con_pruebas_en_rojo": False})
         v = veredicto.strip().upper()
+        prueba_issue = f"tests/test_issue_{n}.py"
+        if v.startswith("APROBADO") and (h.raiz / prueba_issue).exists():
+            pasan, salida = h.pruebas_pasan(prueba_issue)
+            if not pasan:   # el revisor (LLM) aprobó un cambio que no resuelve el issue
+                veredicto = f"CAMBIOS SOLICITADOS (compuerta de pruebas): {prueba_issue} falla.\n{salida}"
+                rondas[-1].update(veredicto=veredicto, aprobado_con_pruebas_en_rojo=True)
+                v = veredicto.upper()
         if v.startswith("APROBADO"):
             estado = "APROBADO"
             break
@@ -70,18 +80,19 @@ def metricas(eventos_por_agente: list[list[dict]]) -> dict:
     return {"acciones": sum(r["pasos"] for r in rs),
             "bloqueadas": sum(r["bloqueadas_por_politica"] for r in rs),
             "rechazos_contrato": sum(r["rechazadas_por_contrato"] for r in rs),
+            "rechazos_humano": sum(r["ediciones_rechazadas_por_humano"] for r in rs),
             "contexto_total": sum(r["contexto_final_chars"] for r in rs),
             "contexto_max": max(r["contexto_final_chars"] for r in rs)}
 
 
 def tabla(unico: dict | None, ac: dict, rondas: int) -> str:
-    filas = ["| Variante | Rondas | Acciones | Bloqueadas | Rechazos de contrato | Contexto final (caracteres) |",
-             "|---|---|---|---|---|---|"]
+    filas = ["| Variante | Rondas | Acciones | Bloqueadas | Rechazos de contrato | Rechazos del humano | Contexto final (caracteres) |",
+             "|---|---|---|---|---|---|---|"]
     if unico:
         filas.append(f"| Agente único | 1 | {unico['acciones']} | {unico['bloqueadas']} | "
-                     f"{unico['rechazos_contrato']} | {unico['contexto_total']} |")
+                     f"{unico['rechazos_contrato']} | {unico.get('rechazos_humano', 0)} | {unico['contexto_total']} |")
     filas.append(f"| Actor-crítico | {rondas} | {ac['acciones']} | {ac['bloqueadas']} | {ac['rechazos_contrato']} | "
-                 f"{ac['contexto_total']} en total (máx. {ac['contexto_max']} por agente) |")
+                 f"{ac['rechazos_humano']} | {ac['contexto_total']} en total (máx. {ac['contexto_max']} por agente) |")
     return "\n".join(filas)
 
 
@@ -90,6 +101,7 @@ def main() -> None:
     ap.add_argument("issue", type=int)
     ap.add_argument("--modo", choices=["interactivo", "grabado"], default="interactivo")
     ap.add_argument("--max-rondas", type=int, default=MAX_RONDAS)
+    ap.add_argument("--sin-aprobacion", action="store_true", help="no pedir aprobación humana de cada edición")
     a = ap.parse_args()
     n = f"{a.issue:02d}"
 
@@ -103,12 +115,15 @@ def main() -> None:
 
     preparar_copia()
     h = Herramientas(COPIA, original=RAIZ)
-    r = orquestar(a.issue, h, crear_modelo, AQUI / "trazas", a.max_rondas)
+    aprobar = aprobar_por_consola if a.modo == "interactivo" and not a.sin_aprobacion else None
+    r = orquestar(a.issue, h, crear_modelo, AQUI / "trazas", a.max_rondas, aprobar)
     for agente in r["agentes"]:
         generar(agente.traza_archivo)
     print("\nPLAN:", r["plan"])
     for x in r["rondas"]:
         print(f"\n--- RONDA {x['ronda']}\nEJECUTOR: {x['ejecutor']}\nREVISOR: {x['veredicto']}")
+        if x["aprobado_con_pruebas_en_rojo"]:
+            print("  !! El revisor aprobó con la prueba del issue en rojo: la compuerta de pruebas lo revirtió.")
     print(f"\nEstado final del bucle actor-crítico: {r['estado']}. Decisión final: HUMANO.")
     ac = metricas([ag.eventos for ag in r["agentes"]])
     unica = AQUI / "trazas" / f"issue{n}_agente_unico.jsonl"

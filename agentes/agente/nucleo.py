@@ -5,6 +5,7 @@ import time
 
 from agente.contrato import validar_decision
 from agente.estados import TRANSICIONES, Estado
+from agente.politica import Decision
 
 PROTOCOLO = """Eres el agente "{nombre}". Trabajas por pasos: en cada turno decides UNA sola acción.
 Responde SIEMPRE con un único objeto JSON, sin texto adicional ni markdown:
@@ -72,6 +73,13 @@ class Agente:
                 accion, args = d["accion"], d.get("args", {})
                 self._ir_a(Estado.EVALUANDO_POLITICA)
                 veredicto = self.politica.evaluar(accion, args, paso)
+                humano = None   # "aprobada" / "rechazada" cuando el humano interviene
+                if veredicto.permitido and accion == "editar_archivo" and self.politica.aprobar_edicion:
+                    self._ir_a(Estado.ESPERANDO_APROBACION)
+                    humano = "aprobada" if self.politica.aprobar_edicion(args) else "rechazada"
+                    if humano == "rechazada":
+                        veredicto = Decision(False, "El humano rechazó la edición")
+                extra = {"humano": humano} if humano else {}
                 if veredicto.permitido:
                     self._ir_a(Estado.EJECUTANDO)
                     try:
@@ -80,13 +88,13 @@ class Agente:
                         obs = f"ERROR: {type(e).__name__}: {e}"
                     self._ir_a(Estado.OBSERVANDO)
                     self._registrar(tipo="accion", paso=paso, pensamiento=d["pensamiento"], accion=accion,
-                                    args=args, observacion=_recortar(obs), bloqueada=False)
+                                    args=args, observacion=_recortar(obs), bloqueada=False, **extra)
                 else:
                     obs = f"BLOQUEADO POR LA POLÍTICA: {veredicto.motivo}"
                     limite = "máximo" in veredicto.motivo
                     self._ir_a(Estado.LIMITE_ALCANZADO if limite else Estado.BLOQUEADO)
                     self._registrar(tipo="accion", paso=paso, pensamiento=d["pensamiento"], accion=accion,
-                                    args=args, observacion=obs, bloqueada=True)
+                                    args=args, observacion=obs, bloqueada=True, **extra)
                     if limite:
                         break
             self.historial.append({"role": "user", "content": f"Observación: {obs}"})

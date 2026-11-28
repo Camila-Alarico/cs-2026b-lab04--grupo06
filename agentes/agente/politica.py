@@ -25,7 +25,7 @@ class Politica:
     comandos_permitidos: tuple = (r"^python -m pytest\b", r"^radon cc\b", r"^lint-imports\b", r"^git (status|diff)\b")
     rutas_protegidas: tuple = ("tests/",)  # el agente no puede "arreglar" las pruebas para que pasen
     max_pasos: int = 15
-    aprobar_edicion: object = None  # función opcional: humano en el circuito (E6)
+    aprobar_edicion: object = None  # humano en el circuito: función(args) -> bool; la usa el núcleo (E6)
 
     def evaluar(self, accion: str, args: dict, paso: int) -> Decision:
         if paso > self.max_pasos:
@@ -42,6 +42,4 @@ class Politica:
             ruta = normalizar(args.get("ruta", ""))
             if ruta.startswith(self.rutas_protegidas):
                 return Decision(False, f"Ruta protegida: {ruta}")
-            if self.aprobar_edicion and not self.aprobar_edicion(args):
-                return Decision(False, "El revisor humano rechazó la edición")
         return Decision(True)

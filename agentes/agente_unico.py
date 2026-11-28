@@ -14,6 +14,7 @@ AQUI = pathlib.Path(__file__).resolve().parent
 RAIZ = AQUI.parent
 sys.path.insert(0, str(AQUI))
 
+from agente.aprobacion import aprobar_por_consola  # noqa: E402
 from agente.herramientas import Herramientas  # noqa: E402
 from agente.modelo import ModeloGrabado, ModeloInteractivo  # noqa: E402
 from agente.nucleo import Agente  # noqa: E402
@@ -56,6 +57,7 @@ def main() -> None:
     ap.add_argument("issue", type=int)
     ap.add_argument("--modo", choices=["interactivo", "grabado"], default="interactivo")
     ap.add_argument("--max-pasos", type=int, default=12)
+    ap.add_argument("--sin-aprobacion", action="store_true", help="no pedir aprobación humana de cada edición")
     a = ap.parse_args()
     n = f"{a.issue:02d}"
     trayectoria = AQUI / "trayectorias" / f"issue{n}_agente_unico.json"
@@ -69,7 +71,8 @@ def main() -> None:
     preparar_copia()
     objetivo = objetivo_issue(n)
     herramientas = Herramientas(COPIA, original=RAIZ)
-    agente = Agente("ejecutor", modelo, herramientas, Politica(max_pasos=a.max_pasos), objetivo, traza)
+    aprobar = aprobar_por_consola if a.modo == "interactivo" and not a.sin_aprobacion else None
+    agente = Agente("ejecutor", modelo, herramientas, Politica(max_pasos=a.max_pasos, aprobar_edicion=aprobar), objetivo, traza)
     print("\nRESULTADO DEL AGENTE:", agente.ejecutar())
     if (COPIA / "notas.md").exists():
         shutil.copy2(COPIA / "notas.md", AQUI / "trazas" / f"issue{n}_notas.md")
