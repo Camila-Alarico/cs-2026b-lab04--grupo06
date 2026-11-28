@@ -272,6 +272,28 @@ npx promptfoo eval -c prompts/criterios/promptfooconfig.yaml --no-cache
 npx promptfoo eval -c prompts/pruebas_eta/promptfooconfig.yaml --no-cache
 ```
 
+## Laboratorio 10: Sistemas Agénticos (RutaSIT Arequipa)
+
+Framework ReAct en `agentes/` con contrato JSON estricto, política de sandbox (`tests/` protegido), herramienta de exploración AST (`mapa_repo`), memoria de trabajo (`notas.md`), orquestación multiagente (gestor, ejecutor y revisor con compuerta determinista de pruebas) y aprobación humana por edición (`ESPERANDO_APROBACION`).
+
+### Estructura de `agentes/`
+* `agentes/agente/`: núcleo ReAct (`nucleo.py`), contrato JSON (`contrato.py`), política y sandbox (`politica.py`), máquina de estados (`estados.py`), aprobación humana (`aprobacion.py`), herramientas (`herramientas.py`) y generación de trazas/diagramas (`traza.py`).
+* `agentes/agente_unico.py` y `agentes/orquestador.py`: ejecutores por consola para modo agente único y modo actor-crítico (soporta `--sin-aprobacion` y trayectorias grabadas).
+* `agentes/pruebas_agente/`: suite de 59 pruebas unitarias y de integración del framework.
+* `agentes/diseno/`: diagrama de estados (`estados.puml` / `estados.png`) y hoja de ruta de delegación progresiva (`delegacion.md`).
+* `agentes/trazas/`: ejecuciones registradas (`.jsonl`), diagramas de trayectoria (`.mmd`) y comparativa del Issue 2 (`issue02_comparacion.md`).
+
+### Comandos de verificación
+```bash
+# Pruebas del framework agéntico (59 passed)
+python -m pytest -q agentes/pruebas_agente
+
+# Pruebas del sistema RutaSIT con los 3 issues resueltos (107 passed, 1 xfailed)
+python -m pytest -q tests
+
+# Regenerar diagramas Mermaid y métricas desde las trazas
+python agentes/agente/traza.py
+
 
 
 ## Reflexión sobre el uso de la IA
