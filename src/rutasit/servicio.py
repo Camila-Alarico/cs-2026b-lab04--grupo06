@@ -103,7 +103,7 @@ class ServicioRutaSIT:
 
     def explicar_retraso(self, id_viaje: str, proveedor: str) -> str:
         viaje = self.viajes[id_viaje]
-        eventos = [e for e in self.eventos if f":{id_viaje}" in e]
+        eventos = [e for e in self.eventos if not e.startswith("push:") and e.split(":")[1:2] == [id_viaje]]
         if not eventos:
             return "No hay eventos registrados para este viaje"
         prompt = f"Explica en una frase el retraso del bus {viaje.bus.placa} según estos eventos: {eventos}"

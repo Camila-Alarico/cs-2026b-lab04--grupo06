@@ -1,4 +1,5 @@
 """Herramientas del agente. Todas trabajan dentro de un sandbox (una COPIA del repositorio)."""
+import ast
 import difflib
 import inspect
 import os
@@ -7,8 +8,10 @@ import shlex
 import subprocess
 import sys
 
-NOMBRES = ["listar_archivos", "leer_archivo", "buscar", "editar_archivo", "ejecutar_pruebas", "ver_cambios",
-           "ejecutar_comando"]
+NOMBRES = ["listar_archivos", "leer_archivo", "buscar", "mapa_repo", "editar_archivo", "ejecutar_pruebas",
+           "ver_cambios", "ejecutar_comando", "anotar", "leer_notas"]
+NOTAS = "notas.md"   # memoria de notas del agente (vive en el sandbox, no se aplica al repositorio)
+MAX_NOTA = 300
 IGNORAR = {"__pycache__", ".pytest_cache", ".git", ".venv", "node_modules"}
 TEXTO = {".py", ".md", ".txt", ".json", ".toml", ".ini", ".cfg", ".puml"}
 MAX_SALIDA = 2500
@@ -76,6 +79,40 @@ class Herramientas:
                     coincidencias.append(f"{rel.as_posix()}:{n}: {linea.strip()}")
         return "\n".join(coincidencias[:30]) or "sin resultados"
 
+    def mapa_repo(self, ruta: str = "src") -> str:
+        """Devuelve la estructura del código Python bajo 'ruta' (por defecto 'src'): archivos, clases, funciones y
+        métodos con su firma y línea. Úsala ANTES de leer archivos completos para ubicar dónde está el código."""
+        base = self._ruta(ruta)
+        if not base.exists():
+            return f"ERROR: no existe {ruta}"
+        archivos = [base] if base.is_file() else [p for p, _ in self._archivos(base) if p.suffix == ".py"]
+        lineas = []
+        for p in archivos:
+            rel = p.relative_to(self.raiz).as_posix()
+            try:
+                arbol = ast.parse(self._leer(p)[0])
+            except SyntaxError as e:
+                lineas.append(f"{rel}  (ERROR de sintaxis en la línea {e.lineno})")
+                continue
+            lineas.append(rel)
+            for nodo in arbol.body:
+                lineas += self._firma(nodo, "  ")
+        texto = "\n".join(lineas) or "(sin archivos .py)"
+        return texto if len(texto) <= 6000 else texto[:6000] + "\n...(recortado: pida una subcarpeta)"
+
+    def _firma(self, nodo, sangria: str) -> list[str]:
+        if not isinstance(nodo, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            return []   # imports, asignaciones, expresiones: no forman parte del mapa
+        doc = (ast.get_docstring(nodo) or "").strip().splitlines()[:1]
+        resumen = f" — {doc[0][:60]}" if doc else ""
+        if isinstance(nodo, ast.ClassDef):
+            bases = ", ".join(ast.unparse(b) for b in nodo.bases)
+            lineas = [f"{sangria}class {nodo.name}({bases}) l.{nodo.lineno}{resumen}"]
+            for hijo in nodo.body:
+                lineas += self._firma(hijo, sangria + "  ")
+            return lineas
+        return [f"{sangria}def {nodo.name}({ast.unparse(nodo.args)}) l.{nodo.lineno}{resumen}"]
+
     def editar_archivo(self, ruta: str, antes: str, despues: str) -> str:
         """Reemplaza el fragmento 'antes' por 'despues' en un archivo. 'antes' debe aparecer EXACTAMENTE una vez."""
         p = self._ruta(ruta)
@@ -91,12 +128,30 @@ class Herramientas:
         """Ejecuta pytest en la copia. 'args' opcional, con rutas con '/' (ej. 'tests/test_issue_01.py -x')."""
         return self._correr([sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider", *shlex.split(args)])
 
+    def anotar(self, texto: str) -> str:
+        """Guarda una nota corta (máx. 300 caracteres) en notas.md: una hipótesis o un archivo ya revisado.
+        Úsala para no repetir trabajo; léelas con leer_notas."""
+        nota = " ".join(str(texto).split())[:MAX_NOTA]
+        if not nota:
+            return "ERROR: la nota está vacía"
+        with open(self.raiz / NOTAS, "a", encoding="utf-8") as f:
+            f.write(f"- {nota}\n")
+        return f"OK: nota {len(self._notas())} guardada"
+
+    def leer_notas(self) -> str:
+        """Devuelve todas las notas guardadas con anotar (hipótesis y archivos revisados)."""
+        return "\n".join(self._notas()) or "(sin notas)"
+
+    def _notas(self) -> list[str]:
+        archivo = self.raiz / NOTAS
+        return archivo.read_text(encoding="utf-8").splitlines() if archivo.exists() else []
+
     def archivos_modificados(self) -> list[str]:
         if self.original is None:
             return []
         cambiados = []
         for p, rel in self._archivos(self.raiz):
-            if p.suffix not in TEXTO:
+            if p.suffix not in TEXTO or rel.as_posix() == NOTAS:
                 continue
             o = self.original / rel
             if not o.exists() or self._leer(o)[0] != self._leer(p)[0]:

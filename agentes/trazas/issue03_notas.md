@@ -1,0 +1,1 @@
+- Revisando src/rutasit/servicio.py: explicar_retraso filtra eventos con subcadena ':id_viaje' y mezcla V1 con V10.

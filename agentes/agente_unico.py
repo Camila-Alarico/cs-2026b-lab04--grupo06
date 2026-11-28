@@ -62,10 +62,13 @@ def main() -> None:
     objetivo = (f"Resuelve el issue descrito en issues/ISSUE-{n}.md. La prueba que lo reproduce está en "
                 f"tests/test_issue_{n}.py y hoy falla: debe pasar. Las demás pruebas que hoy pasan deben seguir "
                 "pasando (python -m pytest -q tests); los otros test_issue_* seguirán fallando y no son tu tarea. "
-                "No modifiques archivos de tests/.")
+                "No modifiques archivos de tests/. Usa mapa_repo para ubicar el código y anotar/leer_notas para dejar "
+                "constancia de hipótesis y archivos revisados.")
     herramientas = Herramientas(COPIA, original=RAIZ)
     agente = Agente("ejecutor", modelo, herramientas, Politica(max_pasos=a.max_pasos), objetivo, traza)
     print("\nRESULTADO DEL AGENTE:", agente.ejecutar())
+    if (COPIA / "notas.md").exists():
+        shutil.copy2(COPIA / "notas.md", AQUI / "trazas" / f"issue{n}_notas.md")
     print("\n=== CAMBIOS PROPUESTOS ===\n" + herramientas.ver_cambios())
     print("\n=== MÉTRICAS ===")
     for clave, valor in generar(traza).items():
