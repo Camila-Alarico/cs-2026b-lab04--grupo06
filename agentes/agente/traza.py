@@ -42,7 +42,8 @@ def a_mermaid(eventos: list[dict]) -> str:
         elif estado == "OBSERVANDO":
             lineas += [f"    A->>H: {_limpio(_llamada(e), 60)}", f"    H-->>A: {_limpio(_observacion(e))}"]
         elif estado in ESTADOS_BLOQUEO:
-            lineas += [f"    A-xP: {_limpio(_llamada(e), 60)}", f"    P-->>A: {estado}"]
+            accion = "límite de pasos" if e["accion"] == "(ninguna)" else _limpio(_llamada(e), 60)
+            lineas += [f"    A-xP: {accion}", f"    P-->>A: {estado}"]
         elif estado == "CONTRATO_INVALIDO":
             lineas += ["    A-xA: decisión inválida", f"    Note over A: {_limpio(e['observacion'], 70)}"]
         elif estado == "FINALIZADO":

@@ -1,0 +1,32 @@
+@startuml estados
+title Máquina de estados del agente (bucle ReAct) — RutaSIT
+hide empty description
+
+state FINALIZADO #C8E6C9
+state LIMITE_ALCANZADO #FFCDD2
+state CONTRATO_INVALIDO #FFE0B2
+state BLOQUEADO #FFE0B2
+
+[*] --> INICIO
+INICIO --> DECIDIENDO : objetivo
+DECIDIENDO --> VALIDANDO_CONTRATO : decisión del modelo
+VALIDANDO_CONTRATO --> CONTRATO_INVALIDO : no cumple el protocolo JSON
+VALIDANDO_CONTRATO --> EVALUANDO_POLITICA : acción válida
+VALIDANDO_CONTRATO --> FINALIZADO : "final" válido
+CONTRATO_INVALIDO --> DECIDIENDO : el error vuelve como observación
+CONTRATO_INVALIDO --> LIMITE_ALCANZADO : no quedan pasos
+EVALUANDO_POLITICA --> EJECUTANDO : permitida
+EVALUANDO_POLITICA --> BLOQUEADO : la política la rechaza
+EVALUANDO_POLITICA --> LIMITE_ALCANZADO : paso > max_pasos
+BLOQUEADO --> DECIDIENDO : el bloqueo vuelve como observación
+EJECUTANDO --> OBSERVANDO : resultado o error
+OBSERVANDO --> DECIDIENDO : observación al historial
+FINALIZADO --> [*]
+LIMITE_ALCANZADO --> [*]
+
+note right of DECIDIENDO
+  Guardia anti-bucle: el bucle corre como máximo
+  max_pasos + 1 veces. En la última, cualquier
+  acción termina en LIMITE_ALCANZADO.
+end note
+@enduml
