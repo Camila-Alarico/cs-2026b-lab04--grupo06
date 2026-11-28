@@ -21,8 +21,10 @@ class OperadorAAdapter(FuenteGps):
     def __init__(self, sdk):
         self._sdk = sdk
 
-    def leer(self, placa: str) -> PosicionGPS:
+    def leer(self, placa: str) -> PosicionGPS | None:
         crudo = self._sdk.ultima_lectura(placa)
+        if crudo is None:
+            return None
         return PosicionGPS(crudo["lat"], crudo["lng"], crudo["vel_kmh"],
                            datetime.fromisoformat(crudo["ts"]))
 
@@ -33,8 +35,11 @@ class OperadorBAdapter(FuenteGps):
     def __init__(self, sdk):
         self._sdk = sdk
 
-    def leer(self, placa: str) -> PosicionGPS:
-        lat_e6, lon_e6, vel_ms, epoch = self._sdk.leer(placa)
+    def leer(self, placa: str) -> PosicionGPS | None:
+        dato = self._sdk.leer(placa)
+        if dato is None:
+            return None
+        lat_e6, lon_e6, vel_ms, epoch = dato
         return PosicionGPS(lat_e6 / 1e6, lon_e6 / 1e6, vel_ms * 3.6, datetime.fromtimestamp(epoch))
 
 

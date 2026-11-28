@@ -66,6 +66,9 @@ class ServicioRutaSIT:
         except TimeoutError:
             self.publicador.publicar(SIN_SENAL, {"id_viaje": viaje.id})
             return viaje.estado
+        if lectura is None:
+            self.publicador.publicar(SIN_SENAL, {"id_viaje": viaje.id})
+            return viaje.estado
         viaje.ultima_posicion = lectura
         puntos = [(p.paradero.latitud, p.paradero.longitud) for p in viaje.ruta.paraderos]
         fuera = distancia_a_ruta_m(lectura.latitud, lectura.longitud, puntos) > self.umbral_desvio_metros

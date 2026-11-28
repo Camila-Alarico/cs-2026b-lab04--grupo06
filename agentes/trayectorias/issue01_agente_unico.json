@@ -1,0 +1,59 @@
+[
+ {
+  "pensamiento": "Leo el issue 1 para entender el error reportado y la prueba que falla",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "issues/ISSUE-01.md"
+  }
+ },
+ {
+  "pensamiento": "Leo src/rutasit/servicio.py para revisar cómo actualizar_bus maneja la lectura del GPS",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "src/rutasit/servicio.py"
+  }
+ },
+ {
+  "pensamiento": "Leo src/rutasit/gps.py para ver cómo los adaptadores manejan una lectura None del SDK",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "src/rutasit/gps.py"
+  }
+ },
+ {
+  "pensamiento": "Modifico OperadorAAdapter y OperadorBAdapter en src/rutasit/gps.py para que devuelvan None cuando el SDK no tiene lectura",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/rutasit/gps.py",
+   "antes": "class OperadorAAdapter(FuenteGps):\n    \"\"\"<<Adapter>>: traduce el dict del operador A (grados, km/h, fecha ISO).\"\"\"\n\n    def __init__(self, sdk):\n        self._sdk = sdk\n\n    def leer(self, placa: str) -> PosicionGPS:\n        crudo = self._sdk.ultima_lectura(placa)\n        return PosicionGPS(crudo[\"lat\"], crudo[\"lng\"], crudo[\"vel_kmh\"],\n                           datetime.fromisoformat(crudo[\"ts\"]))\n\n\nclass OperadorBAdapter(FuenteGps):\n    \"\"\"<<Adapter>>: traduce la tupla del operador B (micro-grados, m/s, epoch).\"\"\"\n\n    def __init__(self, sdk):\n        self._sdk = sdk\n\n    def leer(self, placa: str) -> PosicionGPS:\n        lat_e6, lon_e6, vel_ms, epoch = self._sdk.leer(placa)\n        return PosicionGPS(lat_e6 / 1e6, lon_e6 / 1e6, vel_ms * 3.6, datetime.fromtimestamp(epoch))",
+   "despues": "class OperadorAAdapter(FuenteGps):\n    \"\"\"<<Adapter>>: traduce el dict del operador A (grados, km/h, fecha ISO).\"\"\"\n\n    def __init__(self, sdk):\n        self._sdk = sdk\n\n    def leer(self, placa: str) -> PosicionGPS | None:\n        crudo = self._sdk.ultima_lectura(placa)\n        if crudo is None:\n            return None\n        return PosicionGPS(crudo[\"lat\"], crudo[\"lng\"], crudo[\"vel_kmh\"],\n                           datetime.fromisoformat(crudo[\"ts\"]))\n\n\nclass OperadorBAdapter(FuenteGps):\n    \"\"\"<<Adapter>>: traduce la tupla del operador B (micro-grados, m/s, epoch).\"\"\"\n\n    def __init__(self, sdk):\n        self._sdk = sdk\n\n    def leer(self, placa: str) -> PosicionGPS | None:\n        dato = self._sdk.leer(placa)\n        if dato is None:\n            return None\n        lat_e6, lon_e6, vel_ms, epoch = dato\n        return PosicionGPS(lat_e6 / 1e6, lon_e6 / 1e6, vel_ms * 3.6, datetime.fromtimestamp(epoch))"
+  }
+ },
+ {
+  "pensamiento": "Actualizo actualizar_bus en src/rutasit/servicio.py para publicar sin_senal y mantener el estado si lectura es None",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/rutasit/servicio.py",
+   "antes": "        try:\n            lectura = fuente.leer(viaje.bus.placa)\n        except TimeoutError:\n            self.publicador.publicar(SIN_SENAL, {\"id_viaje\": viaje.id})\n            return viaje.estado\n        viaje.ultima_posicion = lectura",
+   "despues": "        try:\n            lectura = fuente.leer(viaje.bus.placa)\n        except TimeoutError:\n            self.publicador.publicar(SIN_SENAL, {\"id_viaje\": viaje.id})\n            return viaje.estado\n        if lectura is None:\n            self.publicador.publicar(SIN_SENAL, {\"id_viaje\": viaje.id})\n            return viaje.estado\n        viaje.ultima_posicion = lectura"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas de tests/test_issue_01.py para comprobar que el issue 1 quedo resuelto",
+  "accion": "ejecutar_pruebas",
+  "args": {
+   "args": "tests/test_issue_01.py -q"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto toda la suite de pruebas para confirmar que no hay regresiones",
+  "accion": "ejecutar_pruebas",
+  "args": {
+   "args": "tests -q"
+  }
+ },
+ {
+  "pensamiento": "Las pruebas del issue 1 pasan y las demas pruebas existentes siguen en verde",
+  "final": "Issue #1 resuelto: los adaptadores OperadorAAdapter y OperadorBAdapter ahora devuelven None cuando el SDK no tiene lectura, y ServicioRutaSIT.actualizar_bus publica sin_senal manteniendo el estado del viaje. Verificado con pytest (2 passed en test_issue_01.py y sin regresiones en la suite)."
+ }
+]
