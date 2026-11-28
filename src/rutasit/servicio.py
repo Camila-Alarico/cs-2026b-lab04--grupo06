@@ -76,8 +76,20 @@ class ServicioRutaSIT:
         for evento in viaje.procesar_lectura(lectura, fuera, self.lecturas_para_desvio, self.segundos_para_detencion):
             self.publicador.publicar(evento, {"id_viaje": viaje.id})
         if viaje.esta_en_ruta():
-            for pr in viaje.ruta.paraderos:
-                p = pr.paradero
+            paraderos_ord = viaje.ruta.obtener_paraderos_ordenados()
+            primer_pendiente = 0
+            for i in range(len(paraderos_ord) - 1):
+                p_act = paraderos_ord[i]
+                p_sig = paraderos_ord[i + 1]
+                d_seg = distancia_m(p_act.latitud, p_act.longitud, p_sig.latitud, p_sig.longitud)
+                d_bus_act = distancia_m(lectura.latitud, lectura.longitud, p_act.latitud, p_act.longitud)
+                d_bus_sig = distancia_m(lectura.latitud, lectura.longitud, p_sig.latitud, p_sig.longitud)
+                if d_seg > 0 and (d_bus_act ** 2 - d_bus_sig ** 2 + d_seg ** 2) / (2 * d_seg) > 0:
+                    primer_pendiente = i + 1
+            for idx, p in enumerate(paraderos_ord):
+                if idx < primer_pendiente:
+                    self.etas.pop((viaje.id, p.codigo), None)
+                    continue
                 d = distancia_m(lectura.latitud, lectura.longitud, p.latitud, p.longitud)
                 segundos = algoritmo.segundos(d, lectura.velocidad)
                 minutos = int(round(segundos / 60))

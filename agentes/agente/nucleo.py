@@ -29,7 +29,8 @@ class Agente:
     def __init__(self, nombre, modelo, herramientas, politica, objetivo, traza_archivo):
         self.nombre, self.modelo, self.h, self.politica = nombre, modelo, herramientas, politica
         self.traza_archivo = pathlib.Path(traza_archivo)
-        catalogo = "\n".join(f"- {d}" for d in herramientas.catalogo().values())
+        catalogo = "\n".join(f"- {d}" for t, d in herramientas.catalogo().items()
+                             if t in politica.herramientas_permitidas) or "(ninguna: solo razonas)"
         self.historial = [{"role": "user", "content": PROTOCOLO.format(nombre=nombre, objetivo=objetivo,
                                                                          catalogo=catalogo)}]
         self.eventos: list[dict] = []   # traza

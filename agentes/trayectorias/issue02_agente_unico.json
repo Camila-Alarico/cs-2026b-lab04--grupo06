@@ -1,0 +1,50 @@
+[
+ {
+  "pensamiento": "Leo el issue 2 para entender el problema de ETA y avisos en paraderos ya pasados",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "issues/ISSUE-02.md"
+  }
+ },
+ {
+  "pensamiento": "Leo src/rutasit/geo.py para revisar las funciones de calculo de distancia y progreso sobre la ruta",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "src/rutasit/geo.py"
+  }
+ },
+ {
+  "pensamiento": "Anoto la estrategia para filtrar paraderos ya pasados en actualizar_bus segun la proyeccion sobre los segmentos de la ruta",
+  "accion": "anotar",
+  "args": {
+   "texto": "En servicio.py actualizar_bus calcula ETA para todos los paraderos. Hay que proyectar la posicion en los segmentos de ruta, omitir paraderos ya pasados y limpiar sus entradas en self.etas."
+  }
+ },
+ {
+  "pensamiento": "Modifico actualizar_bus en src/rutasit/servicio.py para calcular ETA y enviar avisos solo a paraderos por delante del bus, eliminando ETAs previos de paraderos ya pasados",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/rutasit/servicio.py",
+   "antes": "        if viaje.esta_en_ruta():\n            for pr in viaje.ruta.paraderos:\n                p = pr.paradero\n                d = distancia_m(lectura.latitud, lectura.longitud, p.latitud, p.longitud)\n                segundos = algoritmo.segundos(d, lectura.velocidad)\n                minutos = int(round(segundos / 60))\n                self.etas[(viaje.id, p.codigo)] = Eta(minutos, self.reloj())\n                if minutos <= self.minutos_aviso:\n                    self.publicador.publicar(evento_eta_cercano(p.codigo), {\n                        \"id_viaje\": viaje.id, \"placa\": viaje.bus.placa,\n                        \"nombre_paradero\": p.nombre, \"minutos\": minutos})",
+   "despues": "        if viaje.esta_en_ruta():\n            paraderos_ord = viaje.ruta.obtener_paraderos_ordenados()\n            primer_pendiente = 0\n            for i in range(len(paraderos_ord) - 1):\n                p_act = paraderos_ord[i].paradero\n                p_sig = paraderos_ord[i + 1].paradero\n                d_seg = distancia_m(p_act.latitud, p_act.longitud, p_sig.latitud, p_sig.longitud)\n                d_bus_act = distancia_m(lectura.latitud, lectura.longitud, p_act.latitud, p_act.longitud)\n                d_bus_sig = distancia_m(lectura.latitud, lectura.longitud, p_sig.latitud, p_sig.longitud)\n                if d_seg > 0 and (d_bus_act ** 2 - d_bus_sig ** 2 + d_seg ** 2) / (2 * d_seg) > 0:\n                    primer_pendiente = i + 1\n            for idx, pr in enumerate(paraderos_ord):\n                p = pr.paradero\n                if idx < primer_pendiente:\n                    self.etas.pop((viaje.id, p.codigo), None)\n                    continue\n                d = distancia_m(lectura.latitud, lectura.longitud, p.latitud, p.longitud)\n                segundos = algoritmo.segundos(d, lectura.velocidad)\n                minutos = int(round(segundos / 60))\n                self.etas[(viaje.id, p.codigo)] = Eta(minutos, self.reloj())\n                if minutos <= self.minutos_aviso:\n                    self.publicador.publicar(evento_eta_cercano(p.codigo), {\n                        \"id_viaje\": viaje.id, \"placa\": viaje.bus.placa,\n                        \"nombre_paradero\": p.nombre, \"minutos\": minutos})"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas del issue 2 para comprobar que pasa",
+  "accion": "ejecutar_pruebas",
+  "args": {
+   "args": "tests/test_issue_02.py -q"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto toda la suite de pruebas para confirmar que las 107 pruebas pasan",
+  "accion": "ejecutar_pruebas",
+  "args": {
+   "args": "tests -q"
+  }
+ },
+ {
+  "pensamiento": "Todas las pruebas pasan sin regresiones",
+  "final": "Issue #2 resuelto: actualizar_bus ahora proyecta la posicion del bus sobre cada tramo entre paraderos consecutivos para determinar que paraderos ya quedaron atras, elimina sus ETAs previos para que consultar_eta devuelva NO_DISPONIBLE y calcula ETA y avisos push solo para los paraderos por delante."
+ }
+]

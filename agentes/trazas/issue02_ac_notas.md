@@ -1,0 +1,1 @@
+- Issue #2: proyectar posicion del bus en cada tramo consecutivo de ruta ordenada, borrar ETAs previos de paraderos ya pasados y calcular ETA/avisos solo para los pendientes.

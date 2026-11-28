@@ -1,0 +1,1 @@
+- En servicio.py actualizar_bus calcula ETA para todos los paraderos. Hay que proyectar la posicion en los segmentos de ruta, omitir paraderos ya pasados y limpiar sus entradas en self.etas.

@@ -54,7 +54,8 @@ class ModeloInteractivo(Modelo):
     """Practicar sin clave de API: se copia el contexto a un asistente de IA, se pega su respuesta y la
     decisión queda grabada en 'archivo_trayectoria' (se guarda también si es inválida)."""
 
-    def __init__(self, archivo_trayectoria, archivo_contexto):
+    def __init__(self, archivo_trayectoria, archivo_contexto, etiqueta=""):
+        self._etiqueta = etiqueta
         self._trayectoria = pathlib.Path(archivo_trayectoria)
         self._contexto = pathlib.Path(archivo_contexto)
         self._decisiones: list = []
@@ -65,7 +66,7 @@ class ModeloInteractivo(Modelo):
         texto += "\n\n[AHORA] Responde SOLO con el JSON de tu siguiente decisión."
         self._contexto.write_text(texto, encoding="utf-8")
         copiado = _copiar_al_portapapeles(texto)
-        print(f"\n--- Paso {len(self._decisiones) + 1} ---")
+        print(f"\n--- {self._etiqueta}Paso {len(self._decisiones) + 1} ---")
         print(f"Contexto ({len(texto)} caracteres) guardado en {self._contexto}"
               + (" y copiado al portapapeles." if copiado else ". Cópielo a su asistente."))
         print("Pegue la respuesta del asistente (si no es JSON válido, termine con una línea que diga FIN):")

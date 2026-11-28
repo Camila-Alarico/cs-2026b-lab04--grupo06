@@ -1,0 +1,6 @@
+[
+ {
+  "pensamiento": "Analizo el issue 2 sobre ETA y avisos push en paraderos ya pasados para definir un plan acotado",
+  "final": "Plan de corrección para Issue #2:\n1. Leer issues/ISSUE-02.md, src/rutasit/geo.py y src/rutasit/servicio.py.\n2. En ServicioRutaSIT.actualizar_bus, proyectar la posición del bus sobre los tramos consecutivos de la ruta ordenada para identificar los paraderos que ya quedaron atrás.\n3. Eliminar las entradas previas de self.etas de los paraderos ya pasados (para que consultar_eta devuelva NO_DISPONIBLE) y calcular ETA y avisos push solo para los paraderos pendientes por delante.\n4. Ejecutar pytest tests/test_issue_02.py y toda la suite para verificar que no haya regresiones."
+ }
+]

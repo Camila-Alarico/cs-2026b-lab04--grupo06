@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    participant U as Humano
+    participant A as Revisor
+    participant P as Política
+    participant H as Herramientas
+    U->>A: objetivo
+    A->>H: ver_cambios()
+    H-->>A: --- a/src/rutasit/servicio.py
+    A->>H: ejecutar_pruebas(args=-q tests)
+    H-->>A: !!!!!!!!!!!!!!!!!!! Interrupted: 3 errors durin…
+    A-->>U: APROBADO: El diff modifica únicamente src/rutas…
